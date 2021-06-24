@@ -9,7 +9,7 @@ let CLIENT_CONNECTED = []
 let CLIENTS_STATUS = []
 let temp = []
 
-PORT = 3000
+PORT = 9999
 HOST = 'localhost'
 
 const updateStatusClientByPosition = (payload) => {

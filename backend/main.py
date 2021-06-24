@@ -29,6 +29,6 @@ def collect():
 
 
 if __name__ == '__main__':
-    sio.connect('http://localhost:3000', headers={'client_id': hostname},
+    sio.connect('http://localhost:9999', headers={'client_id': hostname},
                 auth={'token': 'my-token'})
     sio.wait()
