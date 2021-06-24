@@ -4,12 +4,9 @@
     <ul>
       <li v-for="(client, idx) in states" :key="idx">
         {{ client['ram'] }}
-        <new-chart :status="client['ram']"/>
+        <new-chart :status="client['ram']" :width="400" :height="400"/>
       </li>
     </ul>
-    <div style="height: 20%; width: 50%">
-      <new-chart/>
-    </div>
   </div>
 </template>
 

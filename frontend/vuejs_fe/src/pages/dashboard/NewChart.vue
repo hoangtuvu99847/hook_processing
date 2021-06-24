@@ -8,50 +8,53 @@ export default {
   props: {
     status: Object
   },
-  data(){
+  data() {
     return {
       test: {}
     }
   },
   mounted() {
     const dataSets = [{
-      label: 'Dataset 1',
-      backgroundColor: 'rgba(255, 99, 132, 0.5)',
-      borderColor: 'rgb(255, 99, 132)',
-      borderDash: [8, 4],
-      fill: false,
-      data: []
-    }, {
-      label: 'Dataset 2',
+      label: 'RAM',
       backgroundColor: 'rgba(54, 162, 235, 0.5)',
       borderColor: 'rgb(54, 162, 235)',
       cubicInterpolationMode: 'monotone',
       fill: false,
       data: []
     }]
-    this.renderChart({
-      datasets: dataSets
-    }, {
-      scales: {
-        xAxes: [{
-          type: 'realtime',
-          realtime: {
-            delay: 2000,
-            onRefresh: chart => {
-              chart.data.datasets.forEach(dataset => {
-                dataset.data.push({
-                  x: Date.now(),
-                  y: this.test['percent']
-                })
-              })
-            }
+    this.renderChart(
+        {
+          datasets: dataSets,
+        },
+        {
+          responsive: false,
+          maintainAspectRatio: false,
+          scales: {
+            yAxes: [{
+              ticks: {
+                beginAtZero: true,
+                max: 100
+              }
+            }],
+            xAxes: [{
+              type: 'realtime',
+              realtime: {
+                delay: 2000,
+                onRefresh: chart => {
+                  chart.data.datasets.forEach(dataset => {
+                    dataset.data.push({
+                      x: Date.now(),
+                      y: this.test['percent']
+                    })
+                  })
+                }
+              }
+            }]
           }
-        }]
-      }
-    })
+        })
   },
   watch: {
-    status: function (v){
+    status: function (v) {
       console.log('STATUS: ', v['percent'])
       this.test = v
       // Hello
