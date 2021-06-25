@@ -25,6 +25,7 @@ def collect():
         result.update({
             'client': hostname
         })
+        print(result)
         sio.emit('manager', result)
 
 

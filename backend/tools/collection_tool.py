@@ -22,10 +22,13 @@ class CollectionTool:
 
     def cpu(self):
         cpu_per = psutil.cpu_percent(interval=1, percpu=True)
-        cpu_dict = {}
+        list_cpu = []
         for i, core_per in enumerate(cpu_per):
-            cpu_dict['cpu_{count}'.format(count=i+1)] = core_per
-        return cpu_dict
+            cpu_dict = {}
+            cpu_dict['cpu_name'] = 'cpu_{count}'.format(count=i+1)
+            cpu_dict['percent'] = core_per
+            list_cpu.append(cpu_dict)
+        return list_cpu
 
     def disk(self):
         pass
