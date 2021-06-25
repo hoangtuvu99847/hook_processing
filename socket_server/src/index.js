@@ -5,9 +5,9 @@ const io = require("socket.io")(httpServer, {
         methods: ["GET", "POST"]
     }
 });
-let CLIENT_CONNECTED = []
+let SOCKET_CONNECTED = []
 let CLIENTS_STATUS = []
-let temp = []
+let CLIENTS = []
 
 PORT = 9999
 HOST = 'localhost'
@@ -19,28 +19,28 @@ const updateStatusClientByPosition = (payload) => {
 }
 
 const pushNewClientStatus = (payload) => {
-    temp = [...temp, payload.client]
+    CLIENTS = [...CLIENTS, payload.client]
     CLIENTS_STATUS = [...CLIENTS_STATUS, payload]
 }
 
 const handleReplaceStatusByNewStatus = (data) => {
-    (!temp.includes(data.client))
+    (!CLIENTS.includes(data.client))
         ? pushNewClientStatus(data)
         : updateStatusClientByPosition(data)
     io.emit('manager', CLIENTS_STATUS)
-    io.emit('clients', CLIENT_CONNECTED)
+    io.emit('clients', SOCKET_CONNECTED)
 
 }
 
 const clear = (client_id) => {
-    if (CLIENT_CONNECTED.length > 0) {
-        CLIENT_CONNECTED = CLIENT_CONNECTED.filter(client => client !== client_id)
+    if (SOCKET_CONNECTED.length > 0) {
+        SOCKET_CONNECTED = SOCKET_CONNECTED.filter(client => client !== client_id)
     }
     if (CLIENTS_STATUS.length > 0) {
         CLIENTS_STATUS = CLIENTS_STATUS.filter(item => item.client !== client_id)
     }
-    if (temp.length > 0) {
-        temp = temp.filter(item => item !== client_id)
+    if (CLIENTS.length > 0) {
+        CLIENTS = CLIENTS.filter(item => item !== client_id)
 
     }
 }
@@ -48,22 +48,25 @@ const clientDisconnect = (socket) => {
     console.log('Socket disconnected: ', socket.id);
     const { client_id } = socket.handshake.headers
     clear(client_id)
-    io.emit('clients', CLIENT_CONNECTED)
+    io.emit('clients', SOCKET_CONNECTED)
     io.emit('manager', CLIENTS_STATUS)
 }
 
 const onConnection = (socket) => {
 
     const { client_id } = socket.handshake.headers
-    client_id !== undefined && (CLIENT_CONNECTED = [...CLIENT_CONNECTED, client_id]);
+    client_id !== undefined && (SOCKET_CONNECTED = [...SOCKET_CONNECTED, client_id]);
 
-    console.log('CLIENT_ID: ', client_id);
+    console.log('SOCKET_ID: ', socket.id);
     socket.on('manager', (data) => {
         handleReplaceStatusByNewStatus(data)
     })
     socket.on('warning', (data) => {
-    })
 
+    })
+    socket.on('details', (client_id) => {
+
+    })
     socket.on('disconnect', () => {
 
         clientDisconnect(socket)
@@ -71,7 +74,7 @@ const onConnection = (socket) => {
     })
 }
 
-io.of('/').on('connection', onConnection)
+io.on('connection', onConnection)
 
 httpServer.listen(PORT, HOST, () => {
     console.log(`Listen at ${HOST}:${PORT}`);
