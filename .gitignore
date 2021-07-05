@@ -2,6 +2,7 @@
 node_modules
 /dist
 env/
+python3-env/
 
 # local env files
 .env.local
