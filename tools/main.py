@@ -7,11 +7,12 @@ from datetime import datetime
 
 LOCALHOST = '172.16.0.121'
 BROKER_PORT = 1883
+WEBSOCKET_PORT = 8000
 
 
 class Send:
     def __init__(self):
-        self.client = mqtt.Client()
+        self.client = mqtt.Client(transport='websockets')
         self.tool = CollectionTool()
         self.hostname = socket.gethostname()
         self.ip = socket.gethostbyname(self.hostname)
@@ -30,7 +31,8 @@ class Send:
     def public_to_broker(self):
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
-        self.client.connect(LOCALHOST, BROKER_PORT, 60)
+        self.client.connect(LOCALHOST, WEBSOCKET_PORT, 60)
+        self.client.loop_start()
         try:
             while True:
                 result = CollectionTool().run()
