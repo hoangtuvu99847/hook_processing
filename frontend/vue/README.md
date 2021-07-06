@@ -1,4 +1,4 @@
-# mtqq_sample
+# vue
 
 ## Project setup
 ```
