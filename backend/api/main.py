@@ -30,7 +30,7 @@ def dict_factory(cursor, row):
 
 
 def _init():
-    connection = sqlite3.connect('../../hookprocessing.db')
+    connection = sqlite3.connect('../hookprocessing.db')
     connection.row_factory = dict_factory
     cursor = connection.cursor()
     return cursor

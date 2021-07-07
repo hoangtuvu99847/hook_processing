@@ -46,11 +46,11 @@ class Send:
                 result = CollectionTool().run()
                 result.update({
                     'client': self.hostname,
-                    'ip': '188.188.0.0'
+                    'ip': self.ip
                 })
                 json_data = json.dumps(result).encode('utf-8')
                 print(json_data)
-                self.client.publish(self.prefix_topic + '188.188.0.0', json_data)
+                self.client.publish(self.prefix_topic + self.ip, json_data)
         except Exception as ex:
             print("Send -> public_to_broker :: ", ex)
 
@@ -64,7 +64,7 @@ class Send:
             VALUES (?, ?, ?, ?)
             ON CONFLICT(hostname) DO UPDATE SET ip_address = ?;
             """
-            values = ("OKA", '188.188.0.0',
+            values = (self.hostname, self.ip,
                       self.create_time_now(), self.create_time_now(),
                       self.ip)
             cursor.execute(sql, values)

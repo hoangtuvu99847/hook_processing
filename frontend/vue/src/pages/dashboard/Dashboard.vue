@@ -3,14 +3,14 @@
     <!--    <bar-chart :chartdata="dataCollection"/>-->
     <!--    <line-chart/>-->
     <div class="row px-2">
-      <div class="card shadow" v-for="(server, idx) in servers" :key="idx"
+      <div class="card shadow" v-for="(server, idx) in payload" :key="idx"
            style="width: 18rem; margin-right: 20px; margin-bottom: 20px">
         <div class="card-body">
           <div class="d-flex bd-highlight mb-3">
-            <h5 class="card-title">{{ server.hostname }}</h5>
+            <h5 class="card-title">{{ server.client }}</h5>
             <div class="ms-auto p-2 bd-highlight"><i class="fas fa-signal text-success"></i> Connected</div>
           </div>
-          <h6 class="card-subtitle mb-2 text-muted">{{ server.ip_address }}</h6>
+          <h6 class="card-subtitle mb-2 text-muted">{{ server.ip }}</h6>
           <div class="row">
             <div class="col">
               <div>
@@ -28,7 +28,7 @@
                   <span class="text-muted pl-4" style="font-size: 80%"> RAM</span>
                 </div>
                 <i class="fas fa-memory text-danger fa-lg"></i>
-                <span class="font-weight-bold text-danger" style="margin-left: 8px">80%</span>
+                <span class="font-weight-bold text-danger" style="margin-left: 8px">{{ server.ram.percent }}%</span>
               </div>
             </div>
           </div>
@@ -72,8 +72,10 @@ export default {
   data() {
     return {
       dataCollection: null,
-      servers: [],
+      servers: {},
       obj: {},
+      payload: {},
+      topics: [],
       options: {
         clean: true,
         connectTimeout: 4000,
@@ -89,7 +91,7 @@ export default {
   methods: {
     consumerSubscribeTopics(topics) {
       topics.map(topic => {
-        _mqtt.subscribe(`${CONSTANTS.TOPIC_PREFIX}${topic['ip_address']}`, (error, res) => {
+        _mqtt.subscribe(`${CONSTANTS.TOPIC_PREFIX}${topic.ip_address}`, (error, res) => {
           if (error) {
             console.log('Subscribe to topics error', error)
             return
@@ -99,7 +101,7 @@ export default {
       })
     },
     initConsumer(topics) {
-      let lst = []
+      let payload = {}
       _mqtt.on('connect', () => {
         console.log('Connection succeeded!')
         this.consumerSubscribeTopics(topics)
@@ -108,16 +110,13 @@ export default {
         console.log('Connection failed', error)
       })
       _mqtt.on('message', (topic, message) => {
-        console.log('=========>>> TOPIC: ', topic)
-        if (!lst.includes(topic)) {
-          lst.push(topic)
-        } else {
-          const messageObject = JSON.parse(message.toString())
-          const index = lst.indexOf('server/' + messageObject.ip)
-          console.log('INDEX: ', index)
-        }
-        console.log('LST: ', lst)
+        const messageObject = JSON.parse(message.toString())
+        payload[messageObject.ip] = messageObject
+        this.payload = payload
       })
+      _mqtt.on('disconnect', () => {
+      })
+
     },
     requestGetListServer() {
       try {
@@ -133,6 +132,11 @@ export default {
 
     }
   },
+  watch: {
+    servers: function (v) {
+      console.log('CHANGE: ', v)
+    }
+  }
 
 }
 </script>
