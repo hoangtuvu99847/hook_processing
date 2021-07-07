@@ -35,7 +35,18 @@ import HeaderBar from "@/components/HeaderBar";
 
 export default {
   name: 'App',
-  components: {HeaderBar, SideBar}
+  components: {HeaderBar, SideBar},
+  data() {
+    return {
+      servers: []
+    }
+  },
+  created() {
+  },
+  mounted() {
+
+  },
+  methods: {}
 }
 </script>
 

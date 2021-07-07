@@ -1,7 +1,25 @@
+from dotenv import load_dotenv
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 import sqlite3
+import os
+import uvicorn
+
+load_dotenv()
+
+HOST = os.environ.get('HOST')
+PORT = os.environ.get('PORT')
 
 app = FastAPI()
+
+origins = ["*"]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 def dict_factory(cursor, row):
@@ -12,7 +30,7 @@ def dict_factory(cursor, row):
 
 
 def _init():
-    connection = sqlite3.connect('../hookprocessing.db')
+    connection = sqlite3.connect('../../hookprocessing.db')
     connection.row_factory = dict_factory
     cursor = connection.cursor()
     return cursor
@@ -33,3 +51,7 @@ def list():
 @app.get("server/{id}")
 def detail():
     pass
+
+
+if __name__ == '__main__':
+    uvicorn.run('main:app', port=int(PORT), reload=True, host=HOST)

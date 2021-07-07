@@ -1,13 +1,21 @@
 # RUN HERE
 from collection_tool import CollectionTool
+from dotenv import load_dotenv
 import socket
 import paho.mqtt.client as mqtt
 import json
 from datetime import datetime
+import os
 
-LOCALHOST = '172.16.0.121'
-BROKER_PORT = 1883
-WEBSOCKET_PORT = 8000
+load_dotenv()
+
+LOCALHOST = os.environ.get('LOCALHOST')
+BROKER_PORT = int(os.environ.get('BROKER_PORT'))
+WEBSOCKET_PORT = int(os.environ.get('WEBSOCKET_PORT'))
+
+print(LOCALHOST)
+print(BROKER_PORT)
+print(WEBSOCKET_PORT)
 
 
 class Send:
@@ -38,11 +46,11 @@ class Send:
                 result = CollectionTool().run()
                 result.update({
                     'client': self.hostname,
-                    'ip': self.ip
+                    'ip': '188.188.0.0'
                 })
                 json_data = json.dumps(result).encode('utf-8')
                 print(json_data)
-                self.client.publish(self.prefix_topic + self.ip, json_data)
+                self.client.publish(self.prefix_topic + '188.188.0.0', json_data)
         except Exception as ex:
             print("Send -> public_to_broker :: ", ex)
 
@@ -54,9 +62,11 @@ class Send:
             sql = """
             INSERT INTO server (hostname, ip_address, created_time, updated_time) 
             VALUES (?, ?, ?, ?)
+            ON CONFLICT(hostname) DO UPDATE SET ip_address = ?;
             """
-            values = (self.hostname, self.ip,
-                      self.create_time_now(), self.create_time_now())
+            values = ("OKA", '188.188.0.0',
+                      self.create_time_now(), self.create_time_now(),
+                      self.ip)
             cursor.execute(sql, values)
             connection.commit()
             self.public_to_broker()
@@ -66,4 +76,4 @@ class Send:
 
 
 if __name__ == '__main__':
-    Send().public_to_broker()
+    Send().save_information()
