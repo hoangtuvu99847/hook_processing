@@ -1,4 +1,6 @@
 # RUN HERE
+import sys
+from time import sleep
 from collection_tool import CollectionTool
 from dotenv import load_dotenv
 import socket
@@ -13,10 +15,6 @@ LOCALHOST = os.environ.get('LOCALHOST')
 BROKER_PORT = int(os.environ.get('BROKER_PORT'))
 WEBSOCKET_PORT = int(os.environ.get('WEBSOCKET_PORT'))
 
-print(LOCALHOST)
-print(BROKER_PORT)
-print(WEBSOCKET_PORT)
-
 
 class Send:
     def __init__(self):
@@ -24,7 +22,10 @@ class Send:
         self.tool = CollectionTool()
         self.hostname = socket.gethostname()
         self.ip = socket.gethostbyname(self.hostname)
+        # self.hostname = 'hosttest'
+        # self.ip = '122.1333.1333'
         self.prefix_topic = 'server/'
+        self.payload = {}
 
     def on_connect(self, client, userdata, flags, rc):
         print("Connected with result code "+str(rc))
@@ -33,12 +34,17 @@ class Send:
     def create_time_now(self):
         return datetime.now()
 
-    def on_message(client, userdata, msg):
+    def on_message(self, client, userdata, msg):
         print('==> ', msg.topic+" "+str(msg.payload))
+
+    def on_disconnect(self, client, userdata, rc):
+        if rc != 0:
+            print("BROKER DISCONNECT!!!!!.")
 
     def public_to_broker(self):
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
+        self.client.on_disconnect = self.on_disconnect
         self.client.connect(LOCALHOST, WEBSOCKET_PORT, 60)
         self.client.loop_start()
         try:
@@ -48,9 +54,9 @@ class Send:
                     'client': self.hostname,
                     'ip': self.ip
                 })
-                json_data = json.dumps(result).encode('utf-8')
-                print(json_data)
-                self.client.publish(self.prefix_topic + self.ip, json_data)
+                self.payload = json.dumps(result).encode('utf-8')
+                print(self.payload)
+                self.client.publish(self.prefix_topic + self.ip, self.payload)
         except Exception as ex:
             print("Send -> public_to_broker :: ", ex)
 
@@ -71,9 +77,22 @@ class Send:
             connection.commit()
             self.public_to_broker()
         except Exception as ex:
-            print("Send -> save_information :: ", ex)
+            print("===>>> Send -> save_information :: ", ex)
             return
 
 
 if __name__ == '__main__':
-    Send().save_information()
+    s = Send()
+    try:
+        s.save_information()
+    except KeyboardInterrupt:
+        print('Interrupted')
+        s.payload = {'server': s.ip}
+        data = json.dumps(s.payload).encode('utf-8')
+        s.client.publish('disconnect_server', data)
+        sleep(3)
+        try:
+            sys.exit(0)
+        except SystemExit:
+            os._exit(0)
+
