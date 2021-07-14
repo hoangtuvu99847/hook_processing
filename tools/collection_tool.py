@@ -7,12 +7,25 @@ class CollectionTool:
         self.THRESHOLD = 100 * 1024 * 1024  # 100MB
 
     @staticmethod
-    def convert_byte_to_gb(value):
-        return round(value / (1024.0 ** 3), 1)
+    def bytes2human(n):
+        # http://code.activestate.com/recipes/578019
+        # >>> bytes2human(10000)
+        # '9.8K'
+        # >>> bytes2human(100001221)
+        # '95.4M'
+        symbols = ('K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y')
+        prefix = {}
+        for i, s in enumerate(symbols):
+            prefix[s] = 1 << (i + 1) * 10
+        for s in reversed(symbols):
+            if n >= prefix[s]:
+                value = float(n) / prefix[s]
+                return '%.1f%s' % (value, s)
+        return "%sB" % n
 
     def ram(self):
         memory = psutil.virtual_memory()
-        total = self.convert_byte_to_gb(psutil.virtual_memory().total)
+        total = self.bytes2human(psutil.virtual_memory().total)
         ram_obj = {
             'total': total,
             'percent': memory.percent
@@ -35,10 +48,10 @@ class CollectionTool:
 
     def disk(self):
         disk = psutil.disk_usage('/')
-        total = self.convert_byte_to_gb(disk.total)
-        used = self.convert_byte_to_gb(disk.used)
-        free = self.convert_byte_to_gb(disk.free)
-        percent = self.convert_byte_to_gb(disk.percent)
+        total = self.bytes2human(disk.total)
+        used = self.bytes2human(disk.used)
+        free = self.bytes2human(disk.free)
+        percent = disk.percent
         return {
             'total': total,
             'used': used,
@@ -47,7 +60,17 @@ class CollectionTool:
         }
 
     def network(self):
-        pass
+        net = psutil.net_io_counters()
+        sent = self.bytes2human(net.bytes_sent)
+        recv = self.bytes2human(net.bytes_recv)
+        error_in = net.errin
+        error_out = net.errout
+        return {
+            'sent': sent,
+            'recv': recv,
+            'error_in': error_in,
+            'error_out': error_out,
+        }
 
     def sensor(self):
         list_cpu_temp = []

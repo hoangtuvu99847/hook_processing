@@ -51,8 +51,10 @@ class Send:
             while True:
                 result = CollectionTool().run()
                 result.update({
-                    'client': self.hostname,
-                    'ip': self.ip
+                    'user': {
+                        'hostname': self.hostname,
+                        'ip': self.ip
+                    }
                 })
                 self.payload = json.dumps(result).encode('utf-8')
                 print(self.payload)
@@ -95,4 +97,3 @@ if __name__ == '__main__':
             sys.exit(0)
         except SystemExit:
             os._exit(0)
-
