@@ -12,15 +12,14 @@ class CollectionTool:
 
     def ram(self):
         memory = psutil.virtual_memory()
-
+        total = self.convert_byte_to_gb(psutil.virtual_memory().total)
         ram_obj = {
-            'available': memory.available,
-            'total': self.convert_byte_to_gb(psutil.virtual_memory().total),
+            'total': total,
             'percent': memory.percent
         }
         return ram_obj
 
-    def cpu(self):
+    def cpu_per(self):
         cpu_per = psutil.cpu_percent(interval=1, percpu=True)
         list_cpu = []
         for i, core_per in enumerate(cpu_per):
@@ -30,8 +29,22 @@ class CollectionTool:
             list_cpu.append(cpu_dict)
         return list_cpu
 
+    def cpu_avg(self):
+        percent = psutil.cpu_percent()
+        return percent
+
     def disk(self):
-        pass
+        disk = psutil.disk_usage('/')
+        total = self.convert_byte_to_gb(disk.total)
+        used = self.convert_byte_to_gb(disk.used)
+        free = self.convert_byte_to_gb(disk.free)
+        percent = self.convert_byte_to_gb(disk.percent)
+        return {
+            'total': total,
+            'used': used,
+            'free': free,
+            'percent': percent
+        }
 
     def network(self):
         pass
@@ -60,13 +73,19 @@ class CollectionTool:
     def run(self):
         try:
 
-            cpu_status = self.cpu()
+            cpu_list = self.cpu_per()
             ram_status = self.ram()
             sensor_status = self.sensor()
             disk_status = self.disk()
             network_status = self.network()
+            cpu_avg = self.cpu_avg()
             data = {
-                'cpu': cpu_status,
+                'cpu': {
+                    'cpu_avg': cpu_avg,
+                    'list_cpu': cpu_list,
+                    'core': psutil.cpu_count(logical=False),
+                    'thread': psutil.cpu_count()
+                },
                 'ram': ram_status,
                 'sensor': sensor_status,
                 'disk': disk_status,
