@@ -23,7 +23,7 @@ export default {
       }]
     }, {
       maintainAspectRatio: false,
-      responsive: false,
+      // responsive: false,
       scales: {
         xAxes: [{
           type: 'realtime',
