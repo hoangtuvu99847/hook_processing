@@ -1,5 +1,5 @@
 import mysql.connector
-
+from . import cfg
 
 def init():
     db = None

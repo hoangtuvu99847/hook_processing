@@ -56,10 +56,14 @@ if __name__ == '__main__':
         if value:
             is_save_ok = save_db()
             if is_save_ok:
-                Producer(server_info={
+                p = Producer(server_info={
                     'hostname': hostname,
                     'ip': ip
-                }).produce()
+                })
+                print("Start sending data packet ...")
+                print("====================================")
+                print('If you want to quit. Press Ctrl + C.')
+                p.produce()
     except KeyboardInterrupt:
         print('Interrupted')
         try:

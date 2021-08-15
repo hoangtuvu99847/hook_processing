@@ -16,5 +16,4 @@ def init_mqtt():
         os.environ.get('WEBSOCKET_PORT')), 60)
     mqtt_client.loop_start()
     print('Connect sucessful.')
-    print('If you want to quit. Press Ctrl + C.')
     return mqtt_client
