@@ -9,7 +9,6 @@ def init():
             user='root',
             database='hook_processing',
             password='',
-
         )
         return db
     except Exception as ex:
@@ -43,7 +42,8 @@ class Server:
             self.cursor.execute(query, val)
             self.db.commit()
 
-            print(self.cursor.rowcount, "record inserted.")
+            # print(self.cursor.rowcount, "record inserted.")
+            # == > Change to write log running
             return True
         except Exception as ex:
             print('Server :: save --> ERROR: ', ex)

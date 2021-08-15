@@ -5,15 +5,15 @@ import socket
 import os
 import sys
 from collection.db import Server
-from collection.producer import (
-    Producer
-)
+from collection.producer import Producer
+from yaml import load
+try:
+    from yaml import CLoader as Loader, CDumper as Dumper
+except ImportError:
+    from yaml import Loader, Dumper
 
-
-choice = {
-    'Yes': True,
-    'No': False
-}
+with open("config.yml", "r") as ymlfile:
+    cfg = load(ymlfile, Loader=Loader)
 
 
 def get_ip_machine():
@@ -35,22 +35,10 @@ hostname = socket.gethostname()
 ip = get_ip_machine()
 
 
-questions = [
-    {
-        'type': 'list',
-        'name': 'choice',
-        'message': 'What do you want connect to Hook Processing server ?',
-        'choices': [
-            'Yes',
-            'No',
-        ]
-    },
-]
-
-
 def save_db():
     try:
-        Server().save(hostname=hostname, ip_address=ip)
+        server = Server()
+        server.save(hostname=hostname, ip_address=ip)
         return True
     except Exception as ex:
         pass
@@ -58,7 +46,12 @@ def save_db():
 
 if __name__ == '__main__':
     try:
-        answers = prompt(questions, style=custom_style_2)
+        choice = {
+            'Yes': True,
+            'No': False
+        }
+        question = cfg['cli']['question']
+        answers = prompt(questions=question, style=custom_style_2)
         value = choice.get(answers['choice'])
         if value:
             is_save_ok = save_db()
