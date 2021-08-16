@@ -1,6 +1,6 @@
 from os import O_ASYNC
 from time import time, sleep
-from collection import DISK_USAGE_PATH, THRESHOLD, WAIT_TIME
+from src import DISK_USAGE_PATH, THRESHOLD, WAIT_TIME
 from psutil._common import bytes2human
 from typing import Any, Dict, List, Tuple
 import psutil

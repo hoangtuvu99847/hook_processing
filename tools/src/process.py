@@ -1,4 +1,4 @@
-from collection import PROCESS_PROPS
+from src import PROCESS_PROPS
 from typing import List
 import psutil
 from time import sleep

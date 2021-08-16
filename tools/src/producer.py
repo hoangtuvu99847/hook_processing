@@ -1,11 +1,9 @@
 import time
 from typing import Any, Dict
-from mqtt import init_mqtt
-import socket
-from collection.manager import ResourceManager
-from collection import MAIN_TOPIC
-from collection.process import Process
-from collection.resources import Resource
+from src.mqtt import init_mqtt
+from src import MAIN_TOPIC
+from src.process import Process
+from src.resources import Resource
 import json
 from threading import Thread
 
@@ -23,44 +21,41 @@ class Producer:
         self.prefix_topic = MAIN_TOPIC
         self.payload = {}
 
-    def emit(self, manager, tp, payload) -> None:
+    def emit(self, manager=None, tp="", payload={}) -> None:
         """
         Topic format sample:
             server/192.168.0.1/process/ram
         """
-        try:
-            topic = \
-                f"{MAIN_TOPIC}/{self.server_info.get('ip')}/{manager}/{tp}"
-            bullet = json.dumps(payload).encode('utf-8')
-            infot = self.client.publish(topic, bullet)
-            infot.wait_for_publish()
-        except Exception as ex:
-            print("EX: ", ex)
+        topic = \
+            f"{MAIN_TOPIC}/{self.server_info.get('ip')}/{manager}/{tp}"
+        bullet = json.dumps(payload).encode('utf-8')
+        infot = self.client.publish(topic, bullet)
+        infot.wait_for_publish()
 
-    def collect_ram(self, manager, tp) -> Dict[str, float]:
+    def collect_ram(self, manager, tp):
         while True:
             payload = self.resource_tool.ram()
             self.emit(manager=manager, tp=tp, payload=payload)
             time.sleep(1)
 
-    def collect_cpu(self, manager, tp) -> Dict[str, float]:
+    def collect_cpu(self, manager, tp):
         while True:
             payload = self.resource_tool.cpu()
             self.emit(manager=manager, tp=tp, payload=payload)
 
-    def collect_net(self, manager, tp) -> Dict[str, float]:
+    def collect_net(self, manager, tp):
         while True:
             payload = self.resource_tool.net()
             self.emit(manager=manager, tp=tp, payload=payload)
             time.sleep(1)
 
-    def collect_disk(self, manager, tp) -> Dict[str, float]:
+    def collect_disk(self, manager, tp):
         while True:
             payload = self.resource_tool.disk()
             self.emit(manager=manager, tp=tp, payload=payload)
             time.sleep(1)
 
-    def collect_sensor(self, manager, tp) -> Dict[str, float]:
+    def collect_sensor(self, manager, tp):
         while True:
             pass
 
@@ -85,7 +80,14 @@ class Producer:
             net_thread.join()
             disk_thread.join()
         except Exception as ex:
+            self.logger(type='ERROR', payload=str(ex))
             raise
 
     def disconnect(self) -> None:
-        pass
+        topic = f"{MAIN_TOPIC}/disconnected"
+        self.emit(tp=topic, payload=self.server_info.get('ip'))
+        print('==> EXITED')
+
+    def logger(self, type='SUCCESS', payload=None):
+        topic = 'logger/event'
+        self.emit(tp=topic, payload=payload)

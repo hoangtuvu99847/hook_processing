@@ -1,3 +1,4 @@
+from yaml import load
 __version__ = "1.0.0"
 __author__: str = "vunv"
 __license__: str
@@ -10,5 +11,10 @@ DISK_USAGE_PATH = '/'
 PROCESS_PROPS = ['name', 'username']
 MAIN_TOPIC = 'server/'
 
-from main import cfg
-from mqtt import init_mqtt
+try:
+    from yaml import CLoader as Loader
+except ImportError:
+    from yaml import Loader
+
+with open("config.yml", "r") as ymlfile:
+    cfg = load(ymlfile, Loader=Loader)
