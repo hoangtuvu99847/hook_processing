@@ -1,9 +1,10 @@
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import sqlite3
 import os
 import uvicorn
+import mysql.connector
+
 
 load_dotenv()
 
@@ -29,18 +30,25 @@ def dict_factory(cursor, row):
     return d
 
 
-def _init():
-    connection = sqlite3.connect('../hookprocessing.db')
-    connection.row_factory = dict_factory
-    cursor = connection.cursor()
-    return cursor
+def _init_db():
+    mydb = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="",
+        database="hook_processing"
+    )
+    return mydb
 
 
 @app.get("/")
 def list():
     try:
-        cursor = _init()
-        sql = """SELECT * FROM server WHERE status = 1"""
+        db = _init_db()
+        cursor = db.cursor(dictionary=True)
+
+        sql = """
+        SELECT * FROM server WHERE status = 1
+        """
         cursor.execute(sql)
         data = cursor.fetchall()
         return data

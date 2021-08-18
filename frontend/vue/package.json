@@ -16,6 +16,7 @@
     "dotenv": "^10.0.0",
     "mdb-ui-kit": "^3.8.1",
     "mqtt": "^4.2.8",
+    "paho-mqtt": "^1.1.0",
     "vue": "^2.6.11",
     "vue-chartjs": "^3.5.1",
     "vue-router": "^3.5.2"

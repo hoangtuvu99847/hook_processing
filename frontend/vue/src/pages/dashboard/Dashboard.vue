@@ -2,7 +2,7 @@
   <div>
     <!--    <bar-chart :chartdata="dataCollection"/>-->
     <!--    <line-chart/>-->
-    <div class="row px-2">
+    <!-- <div class="row px-2">
       <div
         class="card shadow"
         :class="[server.status === 'OFF' && 'border-danger']"
@@ -100,117 +100,54 @@
           </div>
         </div>
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
 
 <script>
-import { listServer } from "@/api/dashboard";
-import { CONSTANTS } from "@/utils/constants";
-import _mqtt from "../../../_mqtt";
+import client from "../../../_mqtt";
+import { listServer } from "../../api/dashboard";
 
 export default {
   name: "Dashboard",
   components: {},
   computed: {},
   data() {
-    return {
-      dataCollection: null,
-      payload: [],
-      topics: [],
-      options: {
-        clean: true,
-        connectTimeout: 4000,
-        reconnectPeriod: 4000,
-      },
-    };
+    return {};
   },
   created() {
-    this.requestGetListServer();
-
+    this.handleGetListServer()
+    this.handleEventMQTT();
   },
-  mounted() {},
   methods: {
-    consumerUnsubscribeTopic() {
-      console.log("Destroy: ", this.topics);
-      this.topics.map((item) => {
-        const topicName = "server/" + item.ip_address;
-        _mqtt.unsubscribe(topicName, (err) => {
+    /**
+     * Function handle MQTT events
+     */
+    handleEventMQTT() {
+      // MQTT Client connect event
+
+      client.on("connect", function () {
+        client.subscribe("sample", function (err) {
           if (err) {
-            console.log("consumerUnsubscribeTopic: ", err);
+            client.publish("sample", "Hello mqtt");
           }
         });
       });
-    },
-    consumerSubscribeTopics(topics) {
-      _mqtt.subscribe("disconnect_server", (error, res) => {
-        if (error) {
-          console.log("Subscribe to topics error", error);
-          return;
-        }
-        console.log("Subscribe to topics res", res);
-      });
-      topics.map((topic) => {
-        _mqtt.subscribe(
-          `${CONSTANTS.TOPIC_PREFIX}${topic.ip_address}`,
-          (error, res) => {
-            if (error) {
-              console.log("Subscribe to topics error", error);
-              return;
-            }
-            console.log("Subscribe to topics res", res);
-          }
-        );
+
+      // MQTT Client on message receive event
+
+      client.on("message", function (topic, message) {
+        console.log(message.toString());
       });
     },
-    initConsumer(topics) {
-      const obj = {};
-      _mqtt.on("connect", () => {
-        console.log("Connection succeeded!");
-        this.consumerSubscribeTopics(topics);
-      });
-      _mqtt.on("error", (error) => {
-        console.log("Connection failed", error);
-      });
-      _mqtt.on("message", (topic, message) => {
-        const messageObject = JSON.parse(message.toString());
-        console.log("MESSAGE_OBJ: ", messageObject);
-        if (topic === "disconnect_server") {
-          const ip = messageObject.server;
-          this.payload = this.payload.map((flow) => {
-            flow.user.ip === ip && (flow["status"] = "OFF");
-            return flow;
-          });
-        } else {
-          obj[messageObject.ip] = messageObject;
-        }
-        this.payload = Object.values(obj).map((v) => v);
-      });
-    },
-    detail(payload) {
-      this.$router.push({ name: "detail", params: payload });
-    },
-    requestGetListServer() {
-      try {
-        return listServer()
-          .then((response) => {
-            const topics = response.data;
-            this.initConsumer(topics);
-            this.topics = topics;
-          })
-          .catch((error) => console.log(error));
-      } catch (err) {
-        console.log("requestGetListServer :: -> Error: ", err);
-      }
-    },
-  },
-  destroyed() {
-    this.consumerUnsubscribeTopic();
-  },
-  watch: {
-    payload: function (old, val) {
-      console.log("OLD: ", old);
-      console.log("CHANGE: ", val);
+
+    /**
+     * Function fetch all server connected to broker
+     */
+    handleGetListServer() {
+      listServer()
+        .then((res) => console.log(res))
+        .catch((error) => console.log(error));
     },
   },
 };
