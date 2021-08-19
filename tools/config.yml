@@ -1,8 +1,15 @@
 mysql:
-  host: localhost
-  user: root
-  passwd:
+  host: 35.240.161.144
+  user: vunv
+  passwd: Vu@1479825
   db: hook_processing
+
+mqtt:
+  host: 35.240.161.144
+  port:
+    tcp: 1883
+    websocket: 8000
+    broker: 8080
 
 cli:
   question:
@@ -10,6 +17,6 @@ cli:
     name: choice
     message: What do you want connect to Hook Processing server ?
     choices:
-      - 'Yes'
-      - 'No'
+      - "Yes"
+      - "No"
 use_anonymous: True,

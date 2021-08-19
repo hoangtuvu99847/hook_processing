@@ -113,24 +113,38 @@ export default {
   components: {},
   computed: {},
   data() {
-    return {};
+    return {
+      servers: [],
+      client: {
+        connected: false,
+      },
+      subscribeSuccess: false,
+    };
   },
   created() {
-    this.handleGetListServer()
-    this.handleEventMQTT();
+    this.handleGetListServer();
   },
   methods: {
     /**
      * Function handle MQTT events
+     * @param {Array} topics - List topic subscribe
      */
-    handleEventMQTT() {
+    handleEventMQTT(topics) {
       // MQTT Client connect event
-
       client.on("connect", function () {
-        client.subscribe("sample", function (err) {
-          if (err) {
-            client.publish("sample", "Hello mqtt");
-          }
+        console.log("Connection success !");
+
+        topics.forEach((ip) => {
+          const topic = `server/${ip}/resources/#`;
+          client.subscribe(topic, function (err) {
+            if (err) {
+              console.log("ERROR: ", err);
+              client.publish("error", "Hello mqtt");
+              return;
+            }
+            this.subscribeSuccess = true;
+            console.log(" ==> SUCCESS");
+          });
         });
       });
 
@@ -146,7 +160,18 @@ export default {
      */
     handleGetListServer() {
       listServer()
-        .then((res) => console.log(res))
+        .then((response) => {
+          console.log(response);
+          if (response.status === 200) {
+            return response.data;
+          }
+        })
+        .then((data) => {
+          if (data) {
+            const topics = data.map((e) => e.ip_address);
+            this.handleEventMQTT(topics);
+          }
+        })
         .catch((error) => console.log(error));
     },
   },

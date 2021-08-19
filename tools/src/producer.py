@@ -26,8 +26,7 @@ class Producer:
         Topic format sample:
             server/192.168.0.1/process/ram
         """
-        topic = \
-            f"{MAIN_TOPIC}/{self.server_info.get('ip')}/{manager}/{tp}"
+        topic = f"server/{self.server_info.get('ip')}/{manager}/{tp}"
         bullet = json.dumps(payload).encode('utf-8')
         infot = self.client.publish(topic, bullet)
         infot.wait_for_publish()

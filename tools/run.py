@@ -1,5 +1,4 @@
 import os
-from src.producer import Producer
 import sys
 from src.main import execute as run_tool
 from src.main import producer
