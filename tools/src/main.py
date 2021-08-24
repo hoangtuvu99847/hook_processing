@@ -1,7 +1,5 @@
 
 from yaml import load
-from examples import custom_style_2
-from PyInquirer import prompt
 import socket
 from src.db import Server
 from src.producer import Producer
@@ -40,18 +38,10 @@ producer = Producer(server_info={
 
 
 def execute():
-    choice = {
-        'Yes': True,
-        'No': False
-    }
-    question = cfg['cli']['question']
-    answers = prompt(questions=question, style=custom_style_2)
-    value = choice.get(answers['choice'])
-    if value:
-        server = Server()
-        result_save = server.save(hostname=hostname, ip_address=ip)
-        if result_save:
-            print("Start sending data packet ...")
-            print("====================================")
-            print('If you want to quit. Press Ctrl + C.')
-            producer.produce()
+    server = Server()
+    result_save = server.save(hostname=hostname, ip_address=ip)
+    if result_save:
+        print("Start sending data packet ...")
+        print("====================================")
+        print('If you want to quit. Press Ctrl + C.')
+        producer.produce()
