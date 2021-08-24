@@ -26,7 +26,7 @@ class Producer:
         Topic format sample:
             server/192.168.0.1/process/ram
         """
-        topic = f"server/{self.server_info.get('ip')}/{manager}/{tp}"
+        topic = f"{self.prefix_topic}{self.server_info.get('ip')}/{manager}/{tp}"
         bullet = json.dumps(payload).encode('utf-8')
         infot = self.client.publish(topic, bullet)
         infot.wait_for_publish()
@@ -83,7 +83,7 @@ class Producer:
             raise
 
     def disconnect(self) -> None:
-        topic = f"{MAIN_TOPIC}/disconnected"
+        topic = f"{self.prefix_topic}/disconnected"
         self.emit(tp=topic, payload=self.server_info.get('ip'))
         print('==> EXITED')
 
