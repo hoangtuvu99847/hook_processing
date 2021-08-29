@@ -83,9 +83,12 @@ class Producer:
             raise
 
     def disconnect(self) -> None:
-        topic = f"{self.prefix_topic}/disconnected"
-        self.emit(tp=topic, payload=self.server_info.get('ip'))
+        topic = f"{MAIN_TOPIC}disconnected"
+        payload = self.server_info.get('ip')
+        infot = self.client.publish(
+            topic=topic, payload=json.dumps(payload).encode('utf-8'))
         print('==> EXITED')
+        infot.wait_for_publish()
 
     def logger(self, type='SUCCESS', payload=None):
         topic = 'logger/event'

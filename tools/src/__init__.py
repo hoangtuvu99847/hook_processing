@@ -1,4 +1,3 @@
-from yaml import load
 __version__ = "1.0.0"
 __author__: str = "vunv"
 __license__: str
@@ -12,7 +11,7 @@ PROCESS_PROPS = ['name', 'username']
 MAIN_TOPIC = 'server/'
 
 try:
-    from yaml import CLoader as Loader
+    from yaml import load, CLoader as Loader
 except ImportError:
     from yaml import Loader
 

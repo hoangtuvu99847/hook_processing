@@ -1,8 +1,14 @@
-
-from yaml import load
-import socket
-from src.db import Server
+# -*- coding: utf-8 -*-
 from src.producer import Producer
+from src.db import Server
+import socket
+from yaml import load
+print("+==========================================+")
+print("+           Copyright (c) 2021             +")
+print("+          -- Nguyễn Viết Vũ --            +")
+print("+        Project: Hook Processing          +")
+print("+==========================================+")
+
 
 try:
     from yaml import CLoader as Loader
