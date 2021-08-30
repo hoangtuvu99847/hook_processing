@@ -2,21 +2,11 @@
 from src.producer import Producer
 from src.db import Server
 import socket
-from yaml import load
 print("+==========================================+")
 print("+           Copyright (c) 2021             +")
 print("+          -- Nguyễn Viết Vũ --            +")
 print("+        Project: Hook Processing          +")
 print("+==========================================+")
-
-
-try:
-    from yaml import CLoader as Loader
-except ImportError:
-    from yaml import Loader
-
-with open("config.yml", "r") as ymlfile:
-    cfg = load(ymlfile, Loader=Loader)
 
 
 def get_ip_machine():

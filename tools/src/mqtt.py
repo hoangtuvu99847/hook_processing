@@ -1,19 +1,15 @@
 import os
 from dotenv import load_dotenv
 import paho.mqtt.client as mqtt
-from src import cfg
+from src import MQTTConf
 
 load_dotenv()
 
 """
 Initial connection to MQTT broker
 """
-# mqtt:
-#   tcp: 1883
-#   websocket: 8000
-#   broker: 8080
-BROKER_HOST = cfg['mqtt']['host']
-WEBSOCKET_PORT = cfg['mqtt']['port']['websocket']
+BROKER_HOST = MQTTConf.HOST
+WEBSOCKET_PORT = MQTTConf.PORT.WEBSOCKET
 
 
 def init_mqtt():

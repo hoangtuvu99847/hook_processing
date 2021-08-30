@@ -10,10 +10,4 @@ DISK_USAGE_PATH = '/'
 PROCESS_PROPS = ['name', 'username']
 MAIN_TOPIC = 'server/'
 
-try:
-    from yaml import load, CLoader as Loader
-except ImportError:
-    from yaml import Loader
-
-with open("config.yml", "r") as ymlfile:
-    cfg = load(ymlfile, Loader=Loader)
+from config import *

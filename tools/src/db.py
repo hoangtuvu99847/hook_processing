@@ -1,11 +1,11 @@
 from src.producer import Producer
 import mysql.connector
-from src import cfg
+from src import MySQLConf
 
-HOST = cfg['mysql']['host']
-USER = cfg['mysql']['user']
-PASSWORD = cfg['mysql']['passwd']
-DATABASE = cfg['mysql']['db']
+HOST = MySQLConf.HOST
+USER = MySQLConf.USER
+PASSWORD = MySQLConf.PASSWORD
+DATABASE = MySQLConf.DB
 
 
 def init_db():
