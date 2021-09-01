@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from src.producer import Producer
 from src.db import Server
+import asyncio
 import socket
 print("+==========================================+")
 print("+           Copyright (c) 2021             +")
@@ -40,4 +41,4 @@ def execute():
         print("Start sending data packet ...")
         print("====================================")
         print('If you want to quit. Press Ctrl + C.')
-        producer.produce()
+        asyncio.run(producer.produce())

@@ -1,4 +1,5 @@
 import time
+import asyncio
 from typing import Any, Dict
 from src.mqtt import init_mqtt
 from src import MAIN_TOPIC
@@ -31,56 +32,45 @@ class Producer:
         infot = self.client.publish(topic, bullet)
         infot.wait_for_publish()
 
-    def collect_ram(self, manager, tp):
+    async def collect_ram(self, manager, tp):
         while True:
             payload = self.resource_tool.ram()
+            print("===> Ram: ", payload)
             self.emit(manager=manager, tp=tp, payload=payload)
-            time.sleep(1)
+            await asyncio.sleep(1)
 
-    def collect_cpu(self, manager, tp):
+    async def collect_cpu(self, manager, tp):
         while True:
             payload = self.resource_tool.cpu()
+            print("===> CPU: ", payload)
             self.emit(manager=manager, tp=tp, payload=payload)
+            await asyncio.sleep(1)
 
-    def collect_net(self, manager, tp):
+    async def collect_net(self, manager, tp):
         while True:
             payload = self.resource_tool.net()
             self.emit(manager=manager, tp=tp, payload=payload)
-            time.sleep(1)
+            print("===> Network: ", payload)
+            await asyncio.sleep(1)
 
-    def collect_disk(self, manager, tp):
+    async def collect_disk(self, manager, tp):
         while True:
             payload = self.resource_tool.disk()
             self.emit(manager=manager, tp=tp, payload=payload)
-            time.sleep(1)
+            print("===> Disk: ", payload)
+            await asyncio.sleep(1)
 
-    def collect_sensor(self, manager, tp):
+    async def collect_sensor(self, manager, tp):
         while True:
             pass
 
-    def produce(self) -> None:
-        try:
-            ram_thread = Thread(target=self.collect_ram,
-                                args=('resources', 'ram'))
-            cpu_thread = Thread(target=self.collect_cpu,
-                                args=('resources', 'cpu'))
-            net_thread = Thread(target=self.collect_net,
-                                args=('resources', 'network'))
-            disk_thread = Thread(target=self.collect_disk,
-                                 args=('resources', 'disk'))
-
-            cpu_thread.start()
-            ram_thread.start()
-            net_thread.start()
-            disk_thread.start()
-
-            cpu_thread.join()
-            ram_thread.join()
-            net_thread.join()
-            disk_thread.join()
-        except Exception as ex:
-            self.logger(type='ERROR', payload=str(ex))
-            raise
+    async def produce(self):
+        await asyncio.shield(asyncio.gather(
+            self.collect_ram('resource', 'ram'),
+            self.collect_cpu('resource', 'cpu'),
+            self.collect_net('resource', 'network'),
+            self.collect_disk('resource', 'disk'),
+        ))
 
     def disconnect(self) -> None:
         topic = f"{MAIN_TOPIC}disconnected"
