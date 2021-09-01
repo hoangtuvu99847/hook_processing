@@ -1,4 +1,6 @@
 from os import O_ASYNC
+import os
+import platform
 from time import time, sleep
 from src import DISK_USAGE_PATH, THRESHOLD, WAIT_TIME
 from psutil._common import bytes2human
@@ -61,7 +63,10 @@ class Resource:
         except Exception as ex:
             print('[ERROR] :: Collection :: Resource :: disk() -> ', ex)
 
-    def sensor():
+    def sensor(self):
+        sys = platform.system()
+        if sys == 'Windows' or sys == 'Darwin':
+            return
         try:
             list_cpu_temp = []
             if not hasattr(psutil, "sensors_temperatures"):

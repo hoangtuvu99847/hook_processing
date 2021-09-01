@@ -62,7 +62,10 @@ class Producer:
 
     async def collect_sensor(self, manager, tp):
         while True:
-            pass
+            payload = self.resource_tool.sensor()
+            self.emit(manager=manager, tp=tp, payload=payload)
+            print("===> Sensor: ", payload)
+            await asyncio.sleep(1)
 
     async def produce(self):
         await asyncio.shield(asyncio.gather(
@@ -70,6 +73,7 @@ class Producer:
             self.collect_cpu('resource', 'cpu'),
             self.collect_net('resource', 'network'),
             self.collect_disk('resource', 'disk'),
+            self.collect_sensor('resource', 'sensor'),
         ))
 
     def disconnect(self) -> None:
