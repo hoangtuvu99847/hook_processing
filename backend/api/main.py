@@ -32,9 +32,9 @@ def dict_factory(cursor, row):
 
 def _init_db():
     mydb = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="",
+        host="35.240.161.144",
+        user="vunv",
+        password="Vu@1479825",
         database="hook_processing"
     )
     return mydb

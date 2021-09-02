@@ -5,7 +5,7 @@ import axios from "axios";
 
 
 Vue.config.productionTip = false
-axios.defaults.baseURL = `http://${process.env.VUE_APP_HOST}:${process.env.VUE_APP_PORT}`
+axios.defaults.baseURL = `http://${process.env.VUE_APP_BACKEND_HOST}:${process.env.VUE_APP_BACKEND_PORT}`
 
 new Vue({
     render: h => h(App),

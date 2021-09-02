@@ -1,12 +1,8 @@
-from os import O_ASYNC
-import os
 import platform
-from time import time, sleep
 from src import DISK_USAGE_PATH, THRESHOLD, WAIT_TIME
 from psutil._common import bytes2human
 from typing import Any, Dict, List, Tuple
 import psutil
-import sys
 
 
 class Resource:

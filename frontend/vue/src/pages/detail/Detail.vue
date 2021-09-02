@@ -137,7 +137,6 @@
 </template>
 
 <script>
-import _mqtt from "../../../_mqtt";
 import BarChart from "../dashboard/components/BarChart.vue";
 import LineChart from "../dashboard/components/LineChart.vue";
 export default {
@@ -153,16 +152,16 @@ export default {
   },
   mounted() {},
   methods: {
-    getTopic() {
-      const { params } = this.$route;
-      this.topic = params;
-    },
-    consumerSubscribeTopic() {},
-    initConsumer() {
-      _mqtt.on("message", (topic, message) => {
-        console.log("TOPIC: ", topic, "Message: ", message);
-      });
-    },
+    // getTopic() {
+    //   const { params } = this.$route;
+    //   this.topic = params;
+    // },
+    // consumerSubscribeTopic() {},
+    // initConsumer() {
+    //   _mqtt.on("message", (topic, message) => {
+    //     console.log("TOPIC: ", topic, "Message: ", message);
+    //   });
+    // },
   },
 };
 </script>
