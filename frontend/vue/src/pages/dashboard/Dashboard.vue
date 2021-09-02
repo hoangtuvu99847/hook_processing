@@ -1,6 +1,9 @@
 <template>
   <div>
     <div class="row px-2">
+      <ul v-for="machine in machines" :key="machine.hostname">
+        <li>{{ machine }}</li>
+      </ul>
       <div
         class="card shadow"
         :class="[server.status === 'OFF' && 'border-danger']"
@@ -109,10 +112,15 @@ import { listServer } from "../../api/dashboard";
 export default {
   name: "Dashboard",
   components: {},
-  computed: {},
   data() {
     return {
       lstServer: [],
+      machines: [],
+      tempMachine: [],
+      topicDataReceiver: {
+        machine: "",
+        data: {},
+      },
       client: {
         connected: false,
       },
@@ -130,6 +138,7 @@ export default {
   created() {
     this.createConnection();
   },
+  computed: {},
   methods: {
     /**
      * Function init connection connect MQTT
@@ -151,9 +160,39 @@ export default {
       });
       this.client.on("message", (topic, message) => {
         const data = JSON.parse(message.toString());
-        console.log(data);
+        console.log("Server: ", data.machine, "Data: ", data);
+
+        this.monitorMessage(topic, data);
       });
     },
+    /**
+     * Function view realtime data receive from broker
+     * @param {Object} payload - Data sent from broker
+     */
+    monitorMessage(topic, payload) {
+      // Get specify topic name
+      topic = topic.split("/").at(-1);
+      // console.log("====> TOPIC: ", topic);
+
+      // Merge topic and data to object:
+      this.topicDataReceiver.machine = payload.machine;
+      this.topicDataReceiver.data[topic] = payload;
+
+      let found = this.machines.some(
+        (el) =>
+          el.machine.hostname === this.topicDataReceiver.machine.hostname &&
+          el.machine.ip_address === this.topicDataReceiver.machine.ip_address
+      );
+      console.log("Some: ", found);
+      if (found) {
+        console.log("UPDATE");
+        return;
+      }
+      this.machines = [...this.machines, this.topicDataReceiver];
+
+      // console.log("MACHINE: ", this.machines);
+    },
+    mmMSg() {},
     /**
      * Function handle MQTT events
      * @param {Array} topics - List topic subscribe
@@ -200,6 +239,9 @@ export default {
     lstServer: function (v) {
       console.log("V: ", v);
     },
+    // machines: function (v) {
+    //   console.log("Machines: ", v);
+    // },
   },
 };
 </script>

@@ -70,13 +70,20 @@ class Producer:
             self.emit(manager=manager, tp=tp, payload=payload)
             await asyncio.sleep(1)
 
+    async def collect_all(self, manager, tp):
+        """
+        Get all resources on machine 
+        """
+        while True:
+            pass
+
     async def produce(self):
         await asyncio.gather(
-            self.collect_ram('resource', 'ram'),
-            self.collect_cpu('resource', 'cpu'),
-            self.collect_net('resource', 'network'),
-            self.collect_disk('resource', 'disk'),
-            self.collect_sensor('resource', 'sensor'),
+            self.collect_ram('resources', 'ram'),
+            self.collect_cpu('resources', 'cpu'),
+            self.collect_net('resources', 'network'),
+            self.collect_disk('resources', 'disk'),
+            # self.collect_sensor('resources`', 'sensor'),
         )
 
     def disconnect(self) -> None:
