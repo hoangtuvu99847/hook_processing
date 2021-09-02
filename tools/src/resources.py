@@ -1,9 +1,9 @@
+import sys
 import platform
 from src import DISK_USAGE_PATH, THRESHOLD, WAIT_TIME
 from psutil._common import bytes2human
 from typing import Any, Dict, List, Tuple
 import psutil
-
 
 class Resource:
     """
@@ -60,8 +60,8 @@ class Resource:
             print('[ERROR] :: Collection :: Resource :: disk() -> ', ex)
 
     def sensor(self):
-        sys = platform.system()
-        if sys == 'Windows' or sys == 'Darwin':
+        sys_os = platform.system()
+        if sys_os == 'Windows' or sys_os == 'Darwin':
             return
         try:
             list_cpu_temp = []
