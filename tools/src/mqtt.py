@@ -30,8 +30,8 @@ def on_message(client, userdata, msg):
 def init_mqtt():
     mqtt_client = mqtt.Client(transport='websockets')
     mqtt_client.connect(BROKER_HOST, WEBSOCKET_PORT, 60)
-    mqtt_client.on_message = on_message
-    mqtt_client.on_connect = on_connect
+    # mqtt_client.on_message = on_message
+    # mqtt_client.on_connect = on_connect
     mqtt_client.loop_start()
     print('Connect sucessful.')
     return mqtt_client

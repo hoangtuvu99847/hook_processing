@@ -75,10 +75,24 @@ class Producer:
         Get all resources on machine 
         """
         while True:
-            pass
+            payload = dict(
+                machine=dict(
+                    ip_address=ip,
+                    hostname=hostname
+                ),
+                resource=dict(
+                    ram=self.resource_tool.ram(),
+                    cpu=self.resource_tool.cpu(),
+                    disk=self.resource_tool.disk(),
+                    net=self.resource_tool.net(),
+                )
+            )
+            self.emit(manager=manager, tp=tp, payload=payload)
+            await asyncio.sleep(1)
 
     async def produce(self):
         await asyncio.gather(
+            self.collect_all('resources', '*'),
             self.collect_ram('resources', 'ram'),
             self.collect_cpu('resources', 'cpu'),
             self.collect_net('resources', 'network'),

@@ -19,8 +19,9 @@ class Resource:
     def ram() -> Dict[str, float]:
         try:
             memory = psutil.virtual_memory()
-            total: str = bytes2human(psutil.virtual_memory().total)
-            return dict(total=total, percent=memory.percent)
+            total = bytes2human(psutil.virtual_memory().total)
+            used = bytes2human(psutil.virtual_memory().used)
+            return dict(total=total, used=used, percent=memory.percent)
         except Exception as ex:
             print('[ERROR] :: Collection :: Resource :: mem() -> ', ex)
 
