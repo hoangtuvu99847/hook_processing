@@ -1,19 +1,16 @@
 <template>
   <div>
     <div class="row px-2">
-      <ul v-for="machine in machines" :key="machine.hostname">
-        <li>{{ machine }}</li>
-      </ul>
       <div
         class="card shadow"
-        :class="[server.status === 'OFF' && 'border-danger']"
-        v-for="(server, idx) in lstServer"
-        :key="idx"
+        v-for="machine in machines"
+        :class="[machine.status === 0 && 'border-danger']"
+        :key="machine.machine.hostname"
         style="width: 18rem; margin-right: 20px; margin-bottom: 20px"
       >
         <div class="card-body">
           <div class="d-flex bd-highlight">
-            <h5 class="card-title">{{ server.hostname }}</h5>
+            <h5 class="card-title">{{ machine.machine.hostname }}</h5>
             <div class="ms-auto bd-highlight">
               <a class="btn btn-sm btn-outline-primary" @click="detail(server)"
                 >Details</a
@@ -21,7 +18,7 @@
             </div>
           </div>
           <div class="mb-2">
-            <div v-if="server.status === 'OFF'">
+            <div v-if="machine.status === 0">
               <i class="fas fa-exclamation-triangle text-danger"></i>
               Disconnected
             </div>
@@ -29,8 +26,10 @@
               <i class="fas fa-signal text-success"></i> Connected
             </div>
           </div>
-          <h6 class="card-subtitle mb-2 text-muted">{{ server.ip_address }}</h6>
-          <!-- <div class="row">
+          <h6 class="card-subtitle mb-2 text-muted">
+            {{ machine.machine.ip_address }}
+          </h6>
+          <div class="row">
             <div class="col">
               <div>
                 <div style="margin-left: 30px">
@@ -43,7 +42,7 @@
                   class="font-weight-bold text-danger"
                   style="margin-left: 10px"
                 >
-                  {{ server.cpu.cpu_avg }} %</span
+                  {{ machine.resource.cpu.avg }} %</span
                 >
               </div>
             </div>
@@ -58,7 +57,7 @@
                 <span
                   class="font-weight-bold text-danger"
                   style="margin-left: 8px"
-                  >{{ server.ram.percent }}%</span
+                  >{{ machine.resource.ram.percent }}%</span
                 >
               </div>
             </div>
@@ -75,7 +74,7 @@
                 <span
                   class="font-weight-bold text-danger"
                   style="margin-left: 8px"
-                  >{{ server.disk.percent }}%</span
+                  >{{ machine.resource.disk.percent }}%</span
                 >
               </div>
             </div>
@@ -93,12 +92,12 @@
                 <span
                   class="font-weight-bold text-danger"
                   style="margin-left: 17px"
-                  >{{ server.disk.percent }}%</span
+                  >{{ machine.resource.disk.percent }}%</span
                 >
                 <div></div>
               </div>
             </div>
-          </div> -->
+          </div>
         </div>
       </div>
     </div>
@@ -116,11 +115,7 @@ export default {
     return {
       lstServer: [],
       machines: [],
-      tempMachine: [],
-      topicDataReceiver: {
-        machine: "",
-        data: {},
-      },
+      topics: 0,
       client: {
         connected: false,
       },
@@ -138,12 +133,17 @@ export default {
   created() {
     this.createConnection();
   },
-  computed: {},
+  computed: {
+    machinesOnline: function () {
+      return this.machines.filter((el) => el.status === 1);
+    },
+  },
   methods: {
     /**
      * Function init connection connect MQTT
      */
     createConnection() {
+      // let arr = [];
       const { host, port, endpoint, ...options } = this.connection;
       const connectUrl = `ws://${host}:${port}${endpoint}`;
       try {
@@ -160,47 +160,89 @@ export default {
       });
       this.client.on("message", (topic, message) => {
         const data = JSON.parse(message.toString());
-        console.log("Server: ", data.machine, "Data: ", data);
+        console.log("TOPIC: ", topic, "DATA: ", data);
 
-        this.monitorMessage(topic, data);
+        topic = topic.split("/").at(-1);
+
+        // console.log(topic);
+        this.handleReceiveEvent(topic, data);
       });
     },
     /**
+     * @param {Object} data -  Data corresponding topic receive from broker
+     * @param {String} topic - Topic data receive from broker
+     */
+    handleReceiveEvent(topic, data) {
+      switch (topic) {
+        case "*":
+          this.monitorMessage(topic, data);
+          break;
+        case "disconnected":
+          this.handleDisconnect(topic, data);
+          break;
+      }
+    },
+    /**
+     * Function handle event when machine disconnect
+     * @param {Object} topic - Topic subscribe already
+     * @param {Object} payload - Data sent from broker
+     */
+    handleDisconnect(topic, payload) {
+      console.log("Disconnect topic: ", topic);
+      console.log("Disconnect message: ", payload);
+
+      const idx = this.machines.findIndex(
+        (el) =>
+          el.machine.hostname === payload.hostname &&
+          el.machine.ip_address === payload.ip_address
+      );
+      if (idx !== -1) {
+        // Disconnected!
+        this.machines[idx].status = 0;
+      }
+    },
+    /**
      * Function view realtime data receive from broker
+     * @param {Object} topic - Topic subscribe already
      * @param {Object} payload - Data sent from broker
      */
     monitorMessage(topic, payload) {
-      // Get specify topic name
-      topic = topic.split("/").at(-1);
-      // console.log("====> TOPIC: ", topic);
-
-      // Merge topic and data to object:
-      this.topicDataReceiver.machine = payload.machine;
-      this.topicDataReceiver.data[topic] = payload;
-
-      let found = this.machines.some(
+      payload["status"] = 1;
+      // Check if machine is existing monitor -> Update, else -> Push to list machines
+      const idx = this.machines.findIndex(
         (el) =>
-          el.machine.hostname === this.topicDataReceiver.machine.hostname &&
-          el.machine.ip_address === this.topicDataReceiver.machine.ip_address
+          el.machine.hostname === payload.machine.hostname &&
+          el.machine.ip_address === payload.machine.ip_address
       );
-      console.log("Some: ", found);
-      if (found) {
-        console.log("UPDATE");
+      if (idx === -1) {
+        this.machines = [...this.machines, payload];
         return;
       }
-      this.machines = [...this.machines, this.topicDataReceiver];
-
-      // console.log("MACHINE: ", this.machines);
+      // Vue is not reactive when change item in array. Eg:
+      // a = ['a','b','c']
+      // a[1] = 'd' (Will NOT reactive)
+      // Solution: this.$set(a, 1, 'd')
+      this.$set(this.machines, idx, payload);
     },
-    mmMSg() {},
     /**
      * Function handle MQTT events
      * @param {Array} topics - List topic subscribe
      */
     handleEventMQTT(topics) {
       // MQTT Client connect event
+
+      // Subscribe event disconnected first
+      this.client.subscribe("server/disconnected", function (err, res) {
+        if (err) {
+          this.client.publish("error", "Hello mqtt");
+          return;
+        }
+        console.log("Subscribe to topics res", res);
+      });
+
+      // Subscribe event of all machine
       topics.forEach((ip) => {
-        const topic = `server/${ip}/resources/#`;
+        const topic = `server/${ip}/resources/*`;
         this.client.subscribe(topic, function (err, res) {
           if (err) {
             this.client.publish("error", "Hello mqtt");
@@ -239,9 +281,9 @@ export default {
     lstServer: function (v) {
       console.log("V: ", v);
     },
-    // machines: function (v) {
-    //   console.log("Machines: ", v);
-    // },
+    machines: function (v) {
+      console.log("Machines: ", v);
+    },
   },
 };
 </script>

@@ -102,7 +102,10 @@ class Producer:
 
     def disconnect(self) -> None:
         topic = f"{MAIN_TOPIC}disconnected"
-        payload = self.server_info.get('ip')
+        payload = dict(
+            ip_address=ip,
+            hostname=hostname
+        )
         infot = self.client.publish(
             topic=topic, payload=json.dumps(payload).encode('utf-8'))
         print('::::::::: Exited Session! ::::::::::')
