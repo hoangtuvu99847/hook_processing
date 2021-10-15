@@ -3,6 +3,7 @@ node_modules
 /dist
 env/
 python3-env/
+__pycache__/
 
 # local env files
 .env.local
