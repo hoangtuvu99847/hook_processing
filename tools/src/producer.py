@@ -90,7 +90,7 @@ class Producer:
         self.save_cpu_info(server_id)
         try:
             collect_all_resource_thread = Thread(target=self.collect_all,
-                                                 args=('resource', '*'))
+                                                 args=('resources', '*'))
             ram_thread = Thread(target=self.collect_ram,
                                 args=('resources', 'ram'))
             cpu_thread = Thread(target=self.collect_cpu,
