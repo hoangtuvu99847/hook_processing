@@ -2,8 +2,9 @@ import sys
 import platform
 from src import DISK_USAGE_PATH, THRESHOLD, WAIT_TIME
 from psutil._common import bytes2human
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict
 import psutil
+
 
 class Resource:
     """

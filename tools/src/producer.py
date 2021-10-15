@@ -1,10 +1,10 @@
 import time
-import asyncio
 from src.mqtt import init_mqtt
 from src import MAIN_TOPIC
 from src.process import Process
 from src.resources import Resource
 from src.db import CPU, DB, Server
+from threading import Thread
 import json
 from src import hostname, ip
 
@@ -41,37 +41,31 @@ class Producer:
         infot = self.client.publish(topic, bullet, qos=2)
         infot.wait_for_publish()
 
-    async def collect_ram(self, manager, tp):
+    def collect_ram(self, manager, tp):
         while True:
             payload = self.resource_tool.ram()
             self.emit(manager=manager, tp=tp, payload=payload)
-            await asyncio.sleep(1)
+            time.sleep(1)
 
-    async def collect_cpu(self, manager, tp):
+    def collect_cpu(self, manager, tp):
         while True:
             payload = self.resource_tool.cpu()
             self.emit(manager=manager, tp=tp, payload=payload)
-            await asyncio.sleep(1)
+            time.sleep(1)
 
-    async def collect_net(self, manager, tp):
+    def collect_net(self, manager, tp):
         while True:
             payload = self.resource_tool.net()
             self.emit(manager=manager, tp=tp, payload=payload)
-            await asyncio.sleep(1)
+            time.sleep(1)
 
-    async def collect_disk(self, manager, tp):
+    def collect_disk(self, manager, tp):
         while True:
             payload = self.resource_tool.disk()
             self.emit(manager=manager, tp=tp, payload=payload)
-            await asyncio.sleep(1)
+            time.sleep(1)
 
-    async def collect_sensor(self, manager, tp):
-        while True:
-            payload = self.resource_tool.sensor()
-            self.emit(manager=manager, tp=tp, payload=payload)
-            await asyncio.sleep(1)
-
-    async def collect_all(self, manager, tp):
+    def collect_all(self, manager, tp):
         """
         Get all resources on machine 
         """
@@ -89,19 +83,44 @@ class Producer:
                 )
             )
             self.emit(manager=manager, tp=tp, payload=payload)
-            await asyncio.sleep(1)
+            time.sleep(1)
 
-    async def produce(self, server_id):
+    def produce(self, server_id):
         # Save info database
         self.save_cpu_info(server_id)
-        await asyncio.gather(
-            self.collect_all('resources', '*'),
-            self.collect_ram('resources', 'ram'),
-            self.collect_cpu('resources', 'cpu'),
-            self.collect_net('resources', 'network'),
-            self.collect_disk('resources', 'disk'),
-            # self.collect_sensor('resources`', 'sensor'),
-        )
+        try:
+            collect_all_resource_thread = Thread(target=self.collect_all,
+                                                 args=('resource', '*'))
+            ram_thread = Thread(target=self.collect_ram,
+                                args=('resources', 'ram'))
+            cpu_thread = Thread(target=self.collect_cpu,
+                                args=('resources', 'cpu'))
+            net_thread = Thread(target=self.collect_net,
+                                args=('resources', 'network'))
+            disk_thread = Thread(target=self.collect_disk,
+                                 args=('resources', 'disk'))
+
+            collect_all_resource_thread.start()
+            cpu_thread.start()
+            ram_thread.start()
+            net_thread.start()
+            disk_thread.start()
+
+            collect_all_resource_thread.join()
+            cpu_thread.join()
+            ram_thread.join()
+            net_thread.join()
+            disk_thread.join()
+        except Exception as ex:
+            self.logger(type='ERROR', payload=str(ex))
+            raise
+        # await asyncio.gather(
+        #     self.collect_all('resources', '*'),
+        #     self.collect_ram('resources', 'ram'),
+        #     self.collect_cpu('resources', 'cpu'),
+        #     self.collect_net('resources', 'network'),
+        #     self.collect_disk('resources', 'disk'),
+        # )
 
     def save_cpu_info(self, server_id):
         """SAVE list CPU in db"""
