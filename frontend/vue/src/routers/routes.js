@@ -3,5 +3,5 @@ import Detail from "@/pages/detail/Detail";
 
 export const routes = [
     { path: '/', component: Dashboard, name: '' },
-    { path: '/detail', component: Detail, name: 'detail' }
+    { path: '/detail/:id', component: Detail, name: 'detail', props: true }
 ]

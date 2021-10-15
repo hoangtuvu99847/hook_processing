@@ -18,9 +18,9 @@ producer = Producer(server_info={
 
 def execute():
     server = Server()
-    result_save = server.save(hostname=hostname, ip_address=ip)
-    if result_save:
+    server_id = server.save(hostname=hostname, ip_address=ip)
+    if server_id:
         print("Start sending data packet ...")
         print("====================================")
         print('If you want to quit. Press Ctrl + C.')
-        asyncio.run(producer.produce())
+        asyncio.run(producer.produce(server_id))

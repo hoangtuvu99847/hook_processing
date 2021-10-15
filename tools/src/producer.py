@@ -1,12 +1,11 @@
 import time
 import asyncio
-from typing import Any, Dict
 from src.mqtt import init_mqtt
 from src import MAIN_TOPIC
 from src.process import Process
 from src.resources import Resource
+from src.db import CPU, DB, Server
 import json
-from threading import Thread
 from src import hostname, ip
 
 
@@ -17,6 +16,7 @@ class Producer:
         Init connection to mqtt broker: 
         """
         self.server_info = server_info
+        self._server_id = None
         self.client = init_mqtt()
         self.resource_tool = Resource()
         self.process_tool = Process()
@@ -31,13 +31,14 @@ class Producer:
         topic = f"{self.prefix_topic}{self.server_info.get('ip')}/{manager}/{tp}"
         if payload:
             payload.update(dict(
+                id=self._server_id,
                 machine=dict(
                     hostname=hostname,
                     ip_address=ip
                 ))
             )
         bullet = json.dumps(payload).encode('utf-8')
-        infot = self.client.publish(topic, bullet)
+        infot = self.client.publish(topic, bullet, qos=2)
         infot.wait_for_publish()
 
     async def collect_ram(self, manager, tp):
@@ -90,7 +91,9 @@ class Producer:
             self.emit(manager=manager, tp=tp, payload=payload)
             await asyncio.sleep(1)
 
-    async def produce(self):
+    async def produce(self, server_id):
+        # Save info database
+        self.save_cpu_info(server_id)
         await asyncio.gather(
             self.collect_all('resources', '*'),
             self.collect_ram('resources', 'ram'),
@@ -99,6 +102,22 @@ class Producer:
             self.collect_disk('resources', 'disk'),
             # self.collect_sensor('resources`', 'sensor'),
         )
+
+    def save_cpu_info(self, server_id):
+        """SAVE list CPU in db"""
+        self._server_id = server_id
+        cpu_resouce = self.resource_tool.cpu()
+        if cpu_resouce:
+            list_cpu = []
+            for cpu in cpu_resouce.get('cpus'):
+                list_cpu.append(cpu['cpu_name'])
+
+            data_insert = ','.join(list_cpu)
+            cpu_entity = CPU()
+            cpu_entity.save(server_id, data_insert)
+
+            # Commit in transaction save info server
+            cpu_entity.db.commit()
 
     def disconnect(self) -> None:
         topic = f"{MAIN_TOPIC}disconnected"

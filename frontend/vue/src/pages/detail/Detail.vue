@@ -14,15 +14,68 @@
               <!-- Area Chart -->
               <div class="card shadow mb-4">
                 <div class="card-header py-3">
-                  <h6 class="m-0 font-weight-bold text-primary"></h6>
+                  <h6 class="m-0 font-weight-bold text-primary">CPU Status</h6>
                 </div>
                 <div class="card-body">
                   <div class="chart-area">
-                    <line-chart />
+                    <cpu-chart
+                      :data="$route.params"
+                      @avg="getAvg"
+                      @overload="getStatus"
+                    />
                   </div>
                   <hr />
-                  Styling for the area chart can be found in the
-                  <code>/js/demo/chart-area-demo.js</code> file.
+                  <div class="row">
+                    <div class="col-9">
+                      <div class="card border-success mb-3">
+                        <div class="card-header" style="font-weight: bold">
+                          Logs
+                        </div>
+                        <div
+                          class="card-body"
+                          style="max-height: 80px; overflow: scroll"
+                          id="logs"
+                        >
+                          <ul
+                            style="
+                              list-style: none;
+                              padding-left: 0px;
+                              font-family: monospace;
+                            "
+                          >
+                            <li v-for="(log, idx) in logs" :key="idx">
+                              <i
+                                v-if="log.type === 'warning'"
+                                class="fas fa-exclamation-triangle text-warning"
+                              ></i>
+
+                              <i v-else class="fas fa-exclamation"></i>
+                              {{ log.text }}
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-3">
+                      <div class="card border-success mb-3">
+                        <div class="card-header" style="font-weight: bold">
+                          CPU Avgs
+                        </div>
+                        <div
+                          :class="[
+                            'card-body',
+                            avgCPU > 60 && avgCPU < 80
+                              ? 'text-warning'
+                              : avgCPU >= 80
+                              ? 'text-danger'
+                              : 'text-success',
+                          ]"
+                        >
+                          <h5 class="card-title">{{ avgCPU }} %</h5>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -139,29 +192,31 @@
 <script>
 import BarChart from "../dashboard/components/BarChart.vue";
 import LineChart from "../dashboard/components/LineChart.vue";
+import CpuChart from "./Chart/CPUChart.vue";
+
 export default {
   name: "Detail",
-  components: { LineChart, BarChart },
+  props: ["id"],
+  components: { LineChart, BarChart, CpuChart },
   data() {
     return {
       topic: {},
+      avgCPU: "",
+      logs: [],
     };
   },
-  created() {
-    
-  },
-  mounted() {},
   methods: {
-    // getTopic() {
-    //   const { params } = this.$route;
-    //   this.topic = params;
-    // },
-    // consumerSubscribeTopic() {},
-    // initConsumer() {
-    //   _mqtt.on("message", (topic, message) => {
-    //     console.log("TOPIC: ", topic, "Message: ", message);
-    //   });
-    // },
+    getAvg(value) {
+      this.avgCPU = value;
+    },
+    getStatus(val) {
+      this.logs = [...this.logs, val];
+      var container = this.$el.querySelector("#logs");
+      container.scrollTop = container.scrollHeight;
+    },
+  },
+  created() {
+    console.log("IP: ", this.$route.params);
   },
 };
 </script>

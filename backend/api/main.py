@@ -42,18 +42,33 @@ def _init_db():
 
 @app.get("/")
 def list():
-    try:
-        db = _init_db()
-        cursor = db.cursor(dictionary=True)
+    db = _init_db()
+    cursor = db.cursor(dictionary=True)
 
-        sql = """
+    sql = """
         SELECT * FROM server WHERE status = 1
-        """
-        cursor.execute(sql)
-        data = cursor.fetchall()
-        return data
-    except Exception as ex:
-        print("get_list_server: ", ex)
+    """
+    cursor.execute(sql)
+    data = cursor.fetchall()
+    return data
+
+
+@app.get("/server/cpu/{server_id}")
+def get_cpu_info(server_id):
+    db = _init_db()
+    cursor = db.cursor(dictionary=True)
+    sql = """
+        SELECT *
+        FROM cpu
+                JOIN server s on s.id = cpu.server_id
+        WHERE server_id = %s
+    """
+    val = (server_id, )
+    cursor.execute(sql, val)
+    cpu_server = cursor.fetchone()
+    if cpu_server.get('data'):
+        cpu_server['data'] = cpu_server['data'].split(',')
+    return cpu_server
 
 
 @app.get("server/{id}")

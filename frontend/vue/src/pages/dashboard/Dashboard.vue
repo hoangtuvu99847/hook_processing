@@ -12,7 +12,9 @@
           <div class="d-flex bd-highlight">
             <h5 class="card-title">{{ machine.machine.hostname }}</h5>
             <div class="ms-auto bd-highlight">
-              <a class="btn btn-sm btn-outline-primary" @click="detail(server)"
+              <a
+                class="btn btn-sm btn-outline-primary"
+                @click="machineDetail(machine)"
                 >Details</a
               >
             </div>
@@ -105,7 +107,8 @@
 </template>
 
 <script>
-import mqtt from "mqtt";
+// import mqtt from "mqtt";
+import ws from "../../../ws";
 import { listServer } from "../../api/dashboard";
 
 export default {
@@ -115,23 +118,14 @@ export default {
     return {
       lstServer: [],
       machines: [],
-      topics: 0,
-      client: {
-        connected: false,
-      },
-      connection: {
-        host: process.env.VUE_APP_HOST,
-        port: process.env.VUE_APP_BROKER_PORT,
-        endpoint: "/mqtt",
-        clean: true, // Reserved session
-        connectTimeout: 4000, // Time out
-        reconnectPeriod: 4000, // Reconnection interval
-      },
+      topics: [],
       subscribeSuccess: false,
     };
   },
   created() {
-    this.createConnection();
+    // this.createConnection();
+    console.log("CREATED DASHBOARD");
+    this.handleGetListServer();
   },
   computed: {
     machinesOnline: function () {
@@ -143,25 +137,16 @@ export default {
      * Function init connection connect MQTT
      */
     createConnection() {
-      // let arr = [];
-      const { host, port, endpoint, ...options } = this.connection;
-      const connectUrl = `ws://${host}:${port}${endpoint}`;
-      try {
-        this.client = mqtt.connect(connectUrl, options);
-      } catch (error) {
-        console.log("mqtt.connect error", error);
-      }
-      this.client.on("connect", () => {
+      console.log("Connected: ", ws.connected);
+      ws.on("connect", () => {
         console.log("Connection succeeded!");
-        this.handleGetListServer();
       });
-      this.client.on("error", (error) => {
+      ws.on("error", (error) => {
         console.log("Connection failed", error);
       });
-      this.client.on("message", (topic, message) => {
+      ws.on("message", (topic, message) => {
         const data = JSON.parse(message.toString());
         console.log("TOPIC: ", topic, "DATA: ", data);
-
         topic = topic.split("/").at(-1);
 
         // console.log(topic);
@@ -230,27 +215,41 @@ export default {
      */
     handleEventMQTT(topics) {
       // MQTT Client connect event
-
       // Subscribe event disconnected first
-      this.client.subscribe("server/disconnected", function (err, res) {
+      console.log("handleEventMQTT");
+      ws.subscribe("server/disconnected", function (err, res) {
         if (err) {
-          this.client.publish("error", "Hello mqtt");
+          ws.publish("error", "Hello mqtt");
           return;
         }
         console.log("Subscribe to topics res", res);
       });
 
       // Subscribe event of all machine
-      topics.forEach((ip) => {
-        const topic = `server/${ip}/resources/*`;
-        this.client.subscribe(topic, function (err, res) {
-          if (err) {
-            this.client.publish("error", "Hello mqtt");
-            return;
-          }
-          // this.subscribeSuccess = true;
-          console.log("Subscribe to topics res", res);
+      return Promise.resolve()
+        .then(() => topics.map((topic) => `server/${topic.name}/resources/*`))
+        .then((ip) => {
+          ws.subscribe(ip, function (err, res) {
+            if (err) {
+              ws.publish("error", "Hello mqtt");
+              return;
+            }
+            // this.subscribeSuccess = true;
+            console.log("Subscribe to topics res", res);
+          });
         });
+    },
+    /**
+     * Function get detail info machine resource
+     * @param {Object} machine - Machine to get infor
+     */
+    machineDetail(payload) {
+      console.log("MACHINE: ", payload);
+      this.$router.push({
+        name: "detail",
+        params: {
+          id: payload.id,
+        },
       });
     },
 
@@ -265,24 +264,51 @@ export default {
             return response.data;
           }
         })
-        .then((data) => (this.lstServer = data))
         .then((data) => {
+          console.log("LIST: ", data);
           if (data) {
-            const topics = data.map((e) => e.ip_address);
-
-            this.handleEventMQTT(topics);
-            console.log(topics);
+            const topics = data.map((e) => ({
+              name: e.ip_address,
+              id: e.id,
+            }));
+            this.topics = topics;
+            return topics;
           }
+        })
+        .then((topics) => {
+          // Init connect MQTT
+          this.createConnection();
+
+          // Handle on event MQTT
+          this.handleEventMQTT(topics);
         })
         .catch((error) => console.log(error));
     },
   },
+  beforeDestroy() {
+    /**
+     * Unsubscribe all event ( machine ) before navigate
+     */
+    return Promise.resolve()
+      .then(() => {
+        console.log(this.topics);
+        return this.topics.map((server) => `server/${server.name}/resources/*`);
+      })
+      .then((topics) => {
+        console.log("TOPICS: ", topics);
+        ws.unsubscribe(topics, function (err, res) {
+          if (err) {
+            ws.publish("error", err);
+            return;
+          }
+          // this.subscribeSuccess = true;
+          console.log("====> Un - Subscribe to topics res", res);
+        });
+      });
+  },
   watch: {
     lstServer: function (v) {
       console.log("V: ", v);
-    },
-    machines: function (v) {
-      console.log("Machines: ", v);
     },
   },
 };

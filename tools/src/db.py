@@ -1,4 +1,3 @@
-from src.producer import Producer
 import mysql.connector
 from src import MySQLConf
 
@@ -8,26 +7,22 @@ PASSWORD = MySQLConf.PASSWORD
 DATABASE = MySQLConf.DB
 
 
-def init_db():
-    db = None
-    try:
-        db = mysql.connector.connect(
-            host=HOST,
-            user=USER,
-            database=DATABASE,
-            password=PASSWORD,
-        )
-        return db
-    except Exception as ex:
-        Producer().logger(type='ERROR', payload=str(ex))
-        raise
-
-
-class Server:
-    db = init_db()
+class DB:
+    """Init connection MYSQL db"""
+    db = mysql.connector.connect(
+        host=HOST,
+        user=USER,
+        database=DATABASE,
+        password=PASSWORD,
+    )
 
     def __init__(self) -> None:
         self.cursor = self.db.cursor(dictionary=True)
+
+
+class Server(DB):
+    def __init__(self) -> None:
+        super().__init__()
 
     def save(self, hostname, ip_address):
         query = """
@@ -38,8 +33,20 @@ class Server:
             """
         val = (hostname, ip_address, ip_address)
         self.cursor.execute(query, val)
-        self.db.commit()
 
-        # print(self.cursor.rowcount, "record inserted.")
         # == > Change to write log running
-        return True
+        return self.cursor.lastrowid
+
+
+class CPU(DB):
+    def __init__(self) -> None:
+        super().__init__()
+
+    def save(self, server_id, data):
+        query = """
+        INSERT INTO cpu(server_id, data)
+            VALUES (%s, %s)
+            ON DUPLICATE KEY UPDATE data = %s
+        """
+        val = (server_id, data, data)
+        self.cursor.execute(query, val)
