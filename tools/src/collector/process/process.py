@@ -1,14 +1,15 @@
-from src import PROCESS_PROPS
-from typing import List
+# from src import PROCESS_PROPS
 import psutil
 from time import sleep
 
 
 class Process:
-    def __init__(self):
-        self.__process_map: list = PROCESS_PROPS
+    """Observe process runing and handle action with process"""
 
-    def get_services(self) -> List[dict]:
+    def __init__(self):
+        self.__process_map = ['name', 'username']
+
+    def get_services(self):
         procs: list = [
             dict(pid=proc.pid,
                  info=proc.info)
@@ -27,3 +28,7 @@ class Process:
             Emit action 
             """
             sleep(1)
+
+
+if __name__ == "__main__":
+    Process().show()

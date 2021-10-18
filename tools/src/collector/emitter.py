@@ -1,0 +1,141 @@
+import time
+
+from paho.mqtt.client import Client
+from src import MAIN_TOPIC
+from src.producer.mqtt import MQTT
+from src.collector.resources.resources import Resource
+from src.db.models import CPU
+from threading import Thread
+import json
+
+
+class CollectorEmitter:
+    """Class initial connection machine with MQTT broker"""
+
+    # Try connect MQTT broker
+    try:
+        mqtt = MQTT()
+        # Get client instance
+        client = mqtt._client
+    except Exception as ex:
+        raise
+
+    def __init__(self, server_info) -> None:
+        self.server_info = server_info
+        self._server_id = None
+        self.prefix_topic = MAIN_TOPIC
+        self.payload = {}
+
+    def emit(self, manager=None, tp="", payload={}) -> None:
+        """
+        Topic format sample:
+            server/192.168.0.1/process/ram
+        """
+        topic = f"{self.prefix_topic}{self.server_info.get('ip')}/{manager}/{tp}"
+        if payload:
+            payload.update(dict(
+                id=self._server_id,
+                machine=dict(
+                    hostname=self.server_info.get('hostname'),
+                    ip_address=self.server_info.get('ip')
+                ))
+            )
+        bullet = json.dumps(payload).encode('utf-8')
+        infot = self.client.publish(topic, bullet, qos=2)
+        infot.wait_for_publish()
+
+    def disconnect(self) -> None:
+        topic = f"{MAIN_TOPIC}disconnected"
+        payload = dict(
+            ip_address=self.server_info.get('ip'),
+            hostname=self.server_info.get('hostname')
+        )
+        infot = self.client.publish(
+            topic=topic, payload=json.dumps(payload).encode('utf-8'))
+        print('::::::::: Exited Session! ::::::::::')
+        infot.wait_for_publish()
+
+    def logger(self, type='SUCCESS', payload=None):
+        topic = 'logger/event'
+        self.emit(tp=topic, payload=payload)
+
+
+class ResourcesEmitter(CollectorEmitter):
+    def __init__(self, server_info) -> None:
+        super().__init__(server_info)
+
+    def produce(self, manager, tp, callback):
+        while True:
+            self.emit(manager=manager, tp=tp, payload=callback)
+            time.sleep(1)
+
+    def save_cpu_info(self, server_id):
+        """SAVE list CPU in db"""
+        self._server_id = server_id
+        cpu_resouce = Resource().cpu()
+        if cpu_resouce:
+            list_cpu = []
+            for cpu in cpu_resouce.get('cpus'):
+                list_cpu.append(cpu['cpu_name'])
+
+            data_insert = ','.join(list_cpu)
+            cpu_entity = CPU()
+            cpu_entity.save(server_id, data_insert)
+
+            # Commit in transaction save info server
+            cpu_entity.db.commit()
+
+    def collect_all(self, manager, tp):
+        """
+        Get all resources on machine 
+        """
+        while True:
+            payload = dict(
+                machine=dict(
+                    ip_address=self.server_info.get('ip'),
+                    hostname=self.server_info.get('hostname')
+                ),
+                resource=dict(
+                    ram=Resource().ram(),
+                    cpu=Resource().cpu(),
+                    disk=Resource().disk(),
+                )
+            )
+            self.emit(manager=manager, tp=tp, payload=payload)
+            time.sleep(1)
+
+    def exec(self, server_id):
+        """Split thread emit parallel resources collected"""
+        # Save info database
+        self.save_cpu_info(server_id)
+        try:
+            collect_all_resource_thread = \
+                Thread(target=self.collect_all,
+                       args=('resources', '*'))
+            collect_ram_thread = \
+                Thread(target=self.produce, args=(
+                    'resources', 'ram', Resource().ram()))
+            collect_cpu_thread = \
+                Thread(target=self.produce, args=(
+                    'resources', 'cpu', Resource().cpu()))
+            collect_disk_thread = \
+                Thread(target=self.produce, args=(
+                    'resources', 'disk', Resource().disk()))
+
+            collect_all_resource_thread.start()
+            collect_ram_thread.start()
+            collect_cpu_thread.start()
+            collect_disk_thread.start()
+
+            collect_ram_thread.join()
+            collect_cpu_thread.join()
+            collect_disk_thread.join()
+
+        except Exception as ex:
+            self.logger(type='ERROR', payload=str(ex))
+            raise
+
+
+class ProcessEmitter(CollectorEmitter):
+    def __init__(self, server_info) -> None:
+        super().__init__(server_info)
