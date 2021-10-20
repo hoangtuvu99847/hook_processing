@@ -4,6 +4,7 @@ from paho.mqtt.client import Client
 from src import MAIN_TOPIC
 from src.producer.mqtt import MQTT
 from src.collector.resources.resources import Resource
+from src.collector.process.process import Process
 from src.db.models import CPU
 from threading import Thread
 import json
@@ -41,7 +42,7 @@ class CollectorEmitter:
                 ))
             )
         bullet = json.dumps(payload).encode('utf-8')
-        infot = self.client.publish(topic, bullet, qos=2)
+        infot = self.client.publish(topic, bullet)
         infot.wait_for_publish()
 
     def disconnect(self) -> None:
@@ -68,6 +69,23 @@ class ResourcesEmitter(CollectorEmitter):
         while True:
             self.emit(manager=manager, tp=tp, payload=callback)
             time.sleep(1)
+
+    def collect_ram(self, manager, tp):
+        while True:
+            payload = Resource().ram()
+            self.emit(manager=manager, tp=tp, payload=payload)
+            time.sleep(3)
+
+    def collect_cpu(self, manager, tp):
+        while True:
+            payload = Resource().cpu()
+            self.emit(manager=manager, tp=tp, payload=payload)
+
+    def collect_disk(self, manager, tp):
+        while True:
+            payload = Resource().disk()
+            self.emit(manager=manager, tp=tp, payload=payload)
+            time.sleep(3)
 
     def save_cpu_info(self, server_id):
         """SAVE list CPU in db"""
@@ -113,14 +131,14 @@ class ResourcesEmitter(CollectorEmitter):
                 Thread(target=self.collect_all,
                        args=('resources', '*'))
             collect_ram_thread = \
-                Thread(target=self.produce, args=(
-                    'resources', 'ram', Resource().ram()))
+                Thread(target=self.collect_ram, args=(
+                    'resources', 'ram'))
             collect_cpu_thread = \
-                Thread(target=self.produce, args=(
-                    'resources', 'cpu', Resource().cpu()))
+                Thread(target=self.collect_cpu, args=(
+                    'resources', 'cpu'))
             collect_disk_thread = \
-                Thread(target=self.produce, args=(
-                    'resources', 'disk', Resource().disk()))
+                Thread(target=self.collect_disk, args=(
+                    'resources', 'disk'))
 
             collect_all_resource_thread.start()
             collect_ram_thread.start()
@@ -139,3 +157,11 @@ class ResourcesEmitter(CollectorEmitter):
 class ProcessEmitter(CollectorEmitter):
     def __init__(self, server_info) -> None:
         super().__init__(server_info)
+
+    def exec(self):
+        while True:
+            process = Process().get_services()
+            self.emit(manager='process', tp='all', payload={
+                'process': process
+            })
+            time.sleep(3)

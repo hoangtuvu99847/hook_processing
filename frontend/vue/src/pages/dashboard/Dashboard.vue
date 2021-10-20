@@ -237,16 +237,23 @@ export default {
             // this.subscribeSuccess = true;
             console.log("Subscribe to topics res", res);
           });
+          ws.subscribe(ip, function (err, res) {
+            if (err) {
+              ws.publish("error", "Hello mqtt");
+              return;
+            }
+            // this.subscribeSuccess = true;
+            console.log("Subscribe to topics res", res);
+          });
         });
     },
     /**
      * Function get detail info machine resource
-     * @param {Object} machine - Machine to get infor
+     * @param {Object} payload - Machine to get infor
      */
     machineDetail(payload) {
-      console.log("MACHINE: ", payload);
       this.$router.push({
-        name: "detail",
+        name: "resources",
         params: {
           id: payload.id,
         },
@@ -289,22 +296,22 @@ export default {
     /**
      * Unsubscribe all event ( machine ) before navigate
      */
-    return Promise.resolve()
-      .then(() => {
-        console.log(this.topics);
-        return this.topics.map((server) => `server/${server.name}/resources/*`);
-      })
-      .then((topics) => {
-        console.log("TOPICS: ", topics);
-        ws.unsubscribe(topics, function (err, res) {
-          if (err) {
-            ws.publish("error", err);
-            return;
-          }
-          // this.subscribeSuccess = true;
-          console.log("====> Un - Subscribe to topics res", res);
-        });
-      });
+    // return Promise.resolve()
+    //   .then(() => {
+    //     console.log(this.topics);
+    //     return this.topics.map((server) => `server/${server.name}/resources/*`);
+    //   })
+    //   .then((topics) => {
+    //     console.log("TOPICS: ", topics);
+    //     ws.unsubscribe(topics, function (err, res) {
+    //       if (err) {
+    //         ws.publish("error", err);
+    //         return;
+    //       }
+    //       // this.subscribeSuccess = true;
+    //       console.log("====> Un - Subscribe to topics res", res);
+    //     });
+    //   });
   },
   watch: {
     lstServer: function (v) {

@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
-from src.collector.emitter import ResourcesEmitter
+from src.collector.emitter import ProcessEmitter, ResourcesEmitter
 from src.consumer.observe import Observe
 from src.db.models import Server
-import paho.mqtt.subscribe as subscribe
 from threading import Thread
-import socket
 
 
 def main(machine):
     resource_prod = ResourcesEmitter(server_info=machine)
+    process_prod = ProcessEmitter(server_info=machine)
     consumer_prod = Observe()
 
     # Create instance machine is server
@@ -23,16 +22,18 @@ def main(machine):
 
         # Create thread execute action
         # Collection resource action
-        publisher = Thread(target=resource_prod.exec,
-                           args=(server_id, ))
+        resource_publisher = Thread(target=resource_prod.exec,
+                                    args=(server_id, ))
         # Collection process action
-        ...
+        process_publisher = Thread(target=process_prod.exec)
         # Consumer action
         consumer = Thread(target=consumer_prod.callback,
                           args=(machine.get('ip'), ))
 
         consumer.start()
-        publisher.start()
+        resource_publisher.start()
+        process_publisher.start()
 
         consumer.join()
-        publisher.join()
+        resource_publisher.join()
+        process_publisher.join()

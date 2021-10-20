@@ -4,6 +4,9 @@ DISK_USAGE_PATH = '/'
 PROCESS_PROPS = ['name', 'username']
 MAIN_TOPIC = 'server/'
 
+PROCESS_PROPERTIES_CONFIG_SHOWN = ['name', 'username',
+                                   'memory_percent', 'cpu_percent', 'status']
+
 
 class MySQLConf:
     HOST = '35.240.161.144'

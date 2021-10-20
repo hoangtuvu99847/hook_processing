@@ -1,31 +1,27 @@
 
 <script>
 import ws from "../../../../ws";
-import { Line, mixins } from "vue-chartjs";
+import { Bubble, mixins } from "vue-chartjs";
 import "chartjs-plugin-streaming";
-import { DetailCPU } from "../../../api/details";
-import { GraphLineColor } from "../../../utils/commonColor";
-import { LOG_LEVEL } from "../../../utils/constants";
-import moment from "moment";
-function createCountCPU() {}
-createCountCPU();
+// import { GraphLineColor } from "../../../utils/commonColor";
 
 export default {
-  name: "CpuChart",
-  extends: Line,
+  name: "NetworkChart",
+  extends: Bubble,
   mixins: [mixins.reactiveData],
   props: {
-    data: Object,
+    dataMachine: Object,
   },
   data() {
     return {
       datasets: [],
       count: 1,
       yGraphAxis: "",
+      topic: "",
     };
   },
   created() {
-    this.getCPUMachine();
+    console.log("SOUUSSIU: ", this.data);
     this.onMessage();
   },
   mounted() {},
@@ -37,66 +33,18 @@ export default {
       ws.on("message", (topic, message) => {
         const data = JSON.parse(message.toString());
         if (topic == this.topic) {
-          // console.log("==>> Message of CPU: ", data, "Topic: ", topic);
-          let line = {};
-          data.cpus.map((cpu) => {
-            line[cpu.cpu_name] = cpu.percent;
-          });
-          this.yGraphAxis = line;
-          this.$emit("avg", data.avg);
-          // Send log when CPU is overload
-          if (data.avg > 80 && data.avg < 100) {
-            const now = moment().format();
-            const msg = {
-              text: `${data.avg} % CPU at ${now}`,
-              type: LOG_LEVEL.WARNING,
-            };
-            this.$emit("overload", msg);
-          } else if (data.avg === 100) {
-            const now = moment().format();
-            const msg = {
-              text: `CPU Overload at ${now}`,
-              type: LOG_LEVEL.DANGER,
-            };
-            this.$emit("overload", msg);
-          }
+          console.log("==>> Message of Network: ", data, "Topic: ", topic);
         }
       });
     },
-    /**
-     * Get detail CPU instance of machine
-     */
-    getCPUMachine() {
-      const { id } = this.data;
-      DetailCPU(id)
-        .then((response) => {
-          return response.data;
-        })
-        .then((r) => {
-          this.datasets = r.data; // List CPU name
-          return r;
-        })
-        .then((r) => {
-          const topic = r.ip_address;
-          this.subscribeCPUTopic(topic);
-        })
-        .then(() => {
-          const datasets = this.datasets.map((dataset) => ({
-            label: dataset,
-            borderColor: GraphLineColor[dataset].borderColor,
-            backgroundColor: GraphLineColor[dataset].backgroundColor,
-            data: [],
-          }));
-          this.renderCPUChart(datasets);
-        });
-    },
+
     /**
      * Function subscribe topic in MQTT broker
      */
-    subscribeCPUTopic(topic) {
+    subscribeNetworkTopic() {
       return Promise.resolve()
         .then(() => {
-          this.topic = `server/${topic}/resources/cpu`;
+          this.topic = `server/${this.topic}/resources/network`;
         })
         .then(() => {
           ws.subscribe(this.topic, function (err, res) {
@@ -108,7 +56,7 @@ export default {
           });
         });
     },
-    renderCPUChart(datasets) {
+    renderNetworkChart(datasets) {
       this.renderChart(
         {
           datasets: datasets,
@@ -125,6 +73,7 @@ export default {
                       dataset.data.push({
                         x: Date.now(),
                         y: this.yGraphAxis[dataset.label],
+                        r: 5,
                       });
                     });
                   },
@@ -147,6 +96,7 @@ export default {
     },
   },
   beforeDestroy() {
+    console.log("========> THIS.TOPIC: ", this.topic);
     return Promise.resolve()
       .then(() => {
         ws.unsubscribe(this.topic, function (err, res) {
@@ -162,8 +112,10 @@ export default {
       });
   },
   watch: {
-    datasets: function (v) {
-      console.log("DATASETS: ", v);
+    dataMachine: function (val) {
+      console.log("Cursors network: ", val);
+      this.topic = val.ip_address;
+      this.subscribeNetworkTopic();
     },
   },
 };

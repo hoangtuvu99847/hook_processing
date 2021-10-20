@@ -71,9 +71,17 @@ def get_cpu_info(server_id):
     return cpu_server
 
 
-@app.get("server/{id}")
-def detail():
-    pass
+@app.get("/server/{id}")
+def detail(id):
+    db = _init_db()
+    cursor = db.cursor(dictionary=True)
+    sql = """
+        SELECT * FROM server WHERE id = %s
+    """
+    val = (id, )
+    cursor.execute(sql, val)
+    server = cursor.fetchone()
+    return server
 
 
 if __name__ == '__main__':
