@@ -2,6 +2,8 @@ import json
 import paho.mqtt.subscribe as subscribe
 from src import MAIN_TOPIC
 from src.config import MQTTConf
+import os
+import signal
 
 KILL_PROCESS = 'kill'
 
@@ -12,18 +14,23 @@ class HandleAction:
     def __init__(self) -> None:
         pass
 
-    def kill_process(self, process):
-        print('Kill process')
+    def kill_process(self, pid):
+        try:
+            os.kill(pid, signal.SIGKILL)
+        except Exception as ex:
+            pass
 
 
 class Observe:
-    """Listenter action sent from process action on client"""
+    """Listenter action sent from process action on client
+    Example message: 
+
+    """
 
     def handle(self, message):
         handler = HandleAction()
-        action = message.get('action')
-        if action['type'] == KILL_PROCESS:
-            handler.kill_process(None)
+        if message['type'] == KILL_PROCESS:
+            handler.kill_process(message.get('pid'))
         elif ...:
             ...
 
@@ -38,5 +45,4 @@ class Observe:
         """
 
         topic = f"{MAIN_TOPIC}{topic}/actions"
-        print(topic)
         subscribe.callback(self.on_message, topic, hostname=MQTTConf.HOST)
