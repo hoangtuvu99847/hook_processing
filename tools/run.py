@@ -1,4 +1,4 @@
-import json
+import time
 import os
 import sys
 from src.main import main as run_collection_tool
@@ -21,7 +21,8 @@ if __name__ == '__main__':
         run_collection_tool(machine)
     except KeyboardInterrupt:
         CollectorEmitter(machine).disconnect()
+        time.sleep(1)
         try:
-            sys.exit(0)
+            sys.exit(1)
         except SystemExit:
             os._exit(0)

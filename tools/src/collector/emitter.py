@@ -130,19 +130,21 @@ class ResourcesEmitter(CollectorEmitter):
             collect_all_resource_thread = \
                 Thread(target=self.collect_all,
                        args=('resources', '*'))
+            collect_all_resource_thread.start()
+
             collect_ram_thread = \
                 Thread(target=self.collect_ram, args=(
                     'resources', 'ram'))
+            collect_ram_thread.start()
+
             collect_cpu_thread = \
                 Thread(target=self.collect_cpu, args=(
                     'resources', 'cpu'))
+            collect_cpu_thread.start()
+
             collect_disk_thread = \
                 Thread(target=self.collect_disk, args=(
                     'resources', 'disk'))
-
-            collect_all_resource_thread.start()
-            collect_ram_thread.start()
-            collect_cpu_thread.start()
             collect_disk_thread.start()
 
             collect_ram_thread.join()

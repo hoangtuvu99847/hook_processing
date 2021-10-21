@@ -24,15 +24,16 @@ def main(machine):
         # Collection resource action
         resource_publisher = Thread(target=resource_prod.exec,
                                     args=(server_id, ))
+        resource_publisher.start()
+
         # Collection process action
         process_publisher = Thread(target=process_prod.exec)
+        process_publisher.start()
+
         # Consumer action
         consumer = Thread(target=consumer_prod.callback,
                           args=(machine.get('ip'), ))
-
         consumer.start()
-        resource_publisher.start()
-        process_publisher.start()
 
         consumer.join()
         resource_publisher.join()
