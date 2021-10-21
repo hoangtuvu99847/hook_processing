@@ -3,7 +3,7 @@ import os
 import sys
 from src.main import main as run_collection_tool
 from src.collector.emitter import CollectorEmitter
-import socket
+from src.sk import HOSTNAME, IP
 
 print("+==========================================+")
 print("+           Copyright (c) 2021             +")
@@ -12,20 +12,9 @@ print("+        Project: Hook Processing          +")
 print("+==========================================+")
 
 
-# Get IP address of machine
-s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-IP = None
-try:
-    s.connect(('10.255.255.255', 1))
-    IP = s.getsockname()[0]
-except Exception:
-    IP = '127.0.0.1'
-finally:
-    s.close()
-
 if __name__ == '__main__':
     machine = {
-        'hostname': socket.gethostname(),
+        'hostname': HOSTNAME,
         'ip': IP
     }
     try:

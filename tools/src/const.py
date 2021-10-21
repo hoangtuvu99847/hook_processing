@@ -1,0 +1,14 @@
+WAIT_TIME = 1
+THRESHOLD = 100 * 1024 * 1024
+DISK_USAGE_PATH = '/'
+PROCESS_PROPS = ['name', 'username']
+MAIN_TOPIC = 'server/'
+
+
+class STATUS_KILL_PROCESS:
+    END_PROCESS_SUCCESS = "END_PROCESS_SUCCESS"
+
+
+class ACTION_PROCESS:
+    KILL = 'kill'
+    TERMINATE = 'terminate'

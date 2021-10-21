@@ -1,7 +1,7 @@
 import time
 
 from paho.mqtt.client import Client
-from src import MAIN_TOPIC
+from src.const import MAIN_TOPIC
 from src.producer.mqtt import MQTT
 from src.collector.resources.resources import Resource
 from src.collector.process.process import Process
