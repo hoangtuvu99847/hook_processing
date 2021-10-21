@@ -54,7 +54,6 @@ class Observe:
             pass
 
     def on_message(self, client, userdata, message):
-        print('MESSAGE: ', message, IP)
         message = json.loads(message.payload.decode('ascii'))
         self.handle(message)
 
