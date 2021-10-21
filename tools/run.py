@@ -21,7 +21,6 @@ if __name__ == '__main__':
         run_collection_tool(machine)
     except KeyboardInterrupt:
         CollectorEmitter(machine).disconnect()
-        time.sleep(1)
         try:
             sys.exit(1)
         except SystemExit:
