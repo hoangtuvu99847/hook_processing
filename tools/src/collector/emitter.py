@@ -7,10 +7,9 @@ from src.collector.resources.resources import Resource
 from src.collector.process.process import Process
 from src.db.models import CPU
 from threading import Thread
-import concurrent.futures
 import json
 
-from src.thread.collection import CollectionThread, exit_event
+from src.thread.collection import exit_event
 
 
 class CollectorEmitter:
@@ -142,22 +141,22 @@ class ResourcesEmitter(CollectorEmitter):
         self.save_cpu_info(server_id)
         try:
             collect_all_resource_thread = \
-                CollectionThread(target=self.collect_all,
+                Thread(target=self.collect_all,
                                  args=('resources', '*'))
             collect_all_resource_thread.start()
 
             collect_ram_thread = \
-                CollectionThread(target=self.collect_ram, args=(
+                Thread(target=self.collect_ram, args=(
                     'resources', 'ram'))
             collect_ram_thread.start()
 
             collect_cpu_thread = \
-                CollectionThread(target=self.collect_cpu, args=(
+                Thread(target=self.collect_cpu, args=(
                     'resources', 'cpu'))
             collect_cpu_thread.start()
 
             collect_disk_thread = \
-                CollectionThread(target=self.collect_disk, args=(
+                Thread(target=self.collect_disk, args=(
                     'resources', 'disk'))
             collect_disk_thread.start()
 

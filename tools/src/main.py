@@ -3,9 +3,6 @@ from src.collector.emitter import ProcessEmitter, ResourcesEmitter
 from src.consumer.observe import Observe
 from src.db.models import Server
 from threading import Thread
-import concurrent.futures
-
-from src.thread.collection import CollectionThread
 
 
 def main(machine):
@@ -36,12 +33,12 @@ def main(machine):
         #     for f in concurrent.futures.as_completed(concurrencies):
         #         pass
 
-        resource_publisher = CollectionThread(target=resource_prod.exec,
-                                              args=(server_id, ))
+        resource_publisher = Thread(target=resource_prod.exec,
+                                    args=(server_id, ))
         resource_publisher.start()
 
         # Collection process action
-        process_publisher = CollectionThread(target=process_prod.exec)
+        process_publisher = Thread(target=process_prod.exec)
         process_publisher.start()
 
         # Consumer action

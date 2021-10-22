@@ -5,7 +5,7 @@ from src.config import MQTTConf
 import os
 import signal
 from src.producer.mqtt import MQTT
-from src.thread.collection import CollectionThread, exit_event
+from src.thread.collection import exit_event
 from src.sk import IP
 
 
