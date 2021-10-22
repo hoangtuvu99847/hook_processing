@@ -12,6 +12,11 @@ print("+        Project: Hook Processing          +")
 print("+==========================================+")
 
 
+def clean_up_thread():
+    print('Clean up!')
+    print('Done!')
+
+
 if __name__ == '__main__':
     machine = {
         'hostname': HOSTNAME,
@@ -20,8 +25,9 @@ if __name__ == '__main__':
     try:
         run_collection_tool(machine)
     except KeyboardInterrupt:
+        clean_up_thread()
         CollectorEmitter(machine).disconnect()
         try:
-            sys.exit(1)
+            sys.exit()
         except SystemExit:
             os._exit(0)

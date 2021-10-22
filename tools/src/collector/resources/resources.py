@@ -27,7 +27,7 @@ class Resource:
 
     def cpu(self) -> Dict[str, Any]:
         try:
-            cpu_per = psutil.cpu_percent(percpu=True, interval=4)
+            cpu_per = psutil.cpu_percent(percpu=True)
             list_cpu: list = []
             cpu_percent: Dict[str, Any]
             for i, core_per in enumerate(cpu_per):

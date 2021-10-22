@@ -24,30 +24,29 @@ def main(machine):
         # Create thread execute action
         # Collection resource action
 
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            concurrencies = []
-            concurrencies.append(
-                executor.submit(resource_prod.exec, server_id),
-                executor.submit(process_prod.exec),
-                executor.submit(consumer_prod.callback, machine.get('ip')),
-            )
-            for f in concurrent.futures.as_completed(concurrencies):
-                pass
+        # with concurrent.futures.ThreadPoolExecutor() as executor:
+        #     concurrencies = []
+        #     concurrencies.append(
+        #         executor.submit(resource_prod.exec, server_id),
+        #         executor.submit(process_prod.exec),
+        #         executor.submit(consumer_prod.callback, machine.get('ip')),
+        #     )
+        #     for f in concurrent.futures.as_completed(concurrencies):
+        #         pass
 
-        print('CURRENTCY: ')
-        # resource_publisher = Thread(target=resource_prod.exec,
-        #                             args=(server_id, ))
-        # resource_publisher.start()
+        resource_publisher = Thread(target=resource_prod.exec,
+                                    args=(server_id, ))
+        resource_publisher.start()
 
-        # # Collection process action
-        # process_publisher = Thread(target=process_prod.exec)
-        # process_publisher.start()
+        # Collection process action
+        process_publisher = Thread(target=process_prod.exec)
+        process_publisher.start()
 
-        # # Consumer action
-        # consumer = Thread(target=consumer_prod.callback,
-        #                   args=(machine.get('ip'), ))
-        # consumer.start()
+        # Consumer action
+        consumer = Thread(target=consumer_prod.callback,
+                          args=(machine.get('ip'), ))
+        consumer.start()
 
-        # consumer.join()
-        # resource_publisher.join()
-        # process_publisher.join()
+        consumer.join()
+        resource_publisher.join()
+        process_publisher.join()
