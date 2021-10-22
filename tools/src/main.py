@@ -3,6 +3,7 @@ from src.collector.emitter import ProcessEmitter, ResourcesEmitter
 from src.consumer.observe import Observe
 from src.db.models import Server
 from threading import Thread
+import concurrent.futures
 
 
 def main(machine):
@@ -22,19 +23,31 @@ def main(machine):
 
         # Create thread execute action
         # Collection resource action
-        resource_publisher = Thread(target=resource_prod.exec,
-                                    args=(server_id, ), daemon=True)
-        resource_publisher.start()
 
-        # Collection process action
-        process_publisher = Thread(target=process_prod.exec, daemon=True)
-        process_publisher.start()
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            concurrencies = []
+            concurrencies.append(
+                executor.submit(resource_prod.exec, server_id),
+                executor.submit(process_prod.exec),
+                executor.submit(consumer_prod.callback, machine.get('ip')),
+            )
+            for f in concurrent.futures.as_completed(concurrencies):
+                pass
 
-        # Consumer action
-        consumer = Thread(target=consumer_prod.callback,
-                          args=(machine.get('ip'), ), daemon=True)
-        consumer.start()
+        print('CURRENTCY: ')
+        # resource_publisher = Thread(target=resource_prod.exec,
+        #                             args=(server_id, ))
+        # resource_publisher.start()
 
-        consumer.join()
-        resource_publisher.join()
-        process_publisher.join()
+        # # Collection process action
+        # process_publisher = Thread(target=process_prod.exec)
+        # process_publisher.start()
+
+        # # Consumer action
+        # consumer = Thread(target=consumer_prod.callback,
+        #                   args=(machine.get('ip'), ))
+        # consumer.start()
+
+        # consumer.join()
+        # resource_publisher.join()
+        # process_publisher.join()

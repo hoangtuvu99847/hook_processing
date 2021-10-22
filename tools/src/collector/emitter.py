@@ -7,6 +7,7 @@ from src.collector.resources.resources import Resource
 from src.collector.process.process import Process
 from src.db.models import CPU
 from threading import Thread
+import concurrent.futures
 import json
 
 
@@ -127,29 +128,16 @@ class ResourcesEmitter(CollectorEmitter):
         # Save info database
         self.save_cpu_info(server_id)
         try:
-            collect_all_resource_thread = \
-                Thread(target=self.collect_all,
-                       args=('resources', '*'))
-            collect_all_resource_thread.start()
-
-            collect_ram_thread = \
-                Thread(target=self.collect_ram, args=(
-                    'resources', 'ram'))
-            collect_ram_thread.start()
-
-            collect_cpu_thread = \
-                Thread(target=self.collect_cpu, args=(
-                    'resources', 'cpu'))
-            collect_cpu_thread.start()
-
-            collect_disk_thread = \
-                Thread(target=self.collect_disk, args=(
-                    'resources', 'disk'))
-            collect_disk_thread.start()
-
-            collect_ram_thread.join()
-            collect_cpu_thread.join()
-            collect_disk_thread.join()
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                concurrencies = []
+                concurrencies.append(
+                    executor.submit(self.collect_all, 'resources', '*'),
+                    executor.submit(self.collect_cpu, 'resources', 'cpu'),
+                    executor.submit(self.collect_ram, 'resources', 'ram'),
+                    executor.submit(self.collect_disk, 'resources', 'disk'),
+                )
+                for f in concurrent.futures.as_completed(concurrencies):
+                    pass
 
         except Exception as ex:
             self.logger(type='ERROR', payload=str(ex))
