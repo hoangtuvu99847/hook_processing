@@ -9,7 +9,7 @@ from src.db.models import CPU
 from threading import Thread
 import json
 
-from src.thread.collection import exit_event
+from src.signal.event import exit_event
 
 
 class CollectorEmitter:
@@ -55,7 +55,7 @@ class CollectorEmitter:
         )
         infot = self.client.publish(
             topic=topic, payload=json.dumps(payload).encode('utf-8'))
-        print('::::::::: Exited Session! ::::::::::')
+        print('::::::::: Terminating... ::::::::::')
         infot.wait_for_publish()
 
     def logger(self, type='SUCCESS', payload=None):
@@ -79,7 +79,6 @@ class ResourcesEmitter(CollectorEmitter):
             time.sleep(3)
             if exit_event.is_set():
                 break
-        print("Collect RAM thread is done")
 
     def collect_cpu(self, manager, tp):
         while True:
@@ -87,7 +86,6 @@ class ResourcesEmitter(CollectorEmitter):
             self.emit(manager=manager, tp=tp, payload=payload)
             if exit_event.is_set():
                 break
-        print("Collect CPU thread is done")
 
     def collect_disk(self, manager, tp):
         while True:
@@ -96,7 +94,7 @@ class ResourcesEmitter(CollectorEmitter):
             time.sleep(3)
             if exit_event.is_set():
                 break
-        print("Collect Disk thread is done")
+        print(":: Shutdown Resource thread ... OK")
 
     def save_cpu_info(self, server_id):
         """SAVE list CPU in db"""
@@ -142,7 +140,7 @@ class ResourcesEmitter(CollectorEmitter):
         try:
             collect_all_resource_thread = \
                 Thread(target=self.collect_all,
-                                 args=('resources', '*'))
+                       args=('resources', '*'))
             collect_all_resource_thread.start()
 
             collect_ram_thread = \
@@ -182,4 +180,4 @@ class ProcessEmitter(CollectorEmitter):
             time.sleep(3)
             if exit_event.is_set():
                 break
-        print('STOP Process')
+        print(':: Shutdown Process thread ... OK')

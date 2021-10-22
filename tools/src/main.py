@@ -3,6 +3,8 @@ from src.collector.emitter import ProcessEmitter, ResourcesEmitter
 from src.consumer.observe import Observe
 from src.db.models import Server
 from threading import Thread
+from src.signal.event import exit_event
+from src.producer.mqtt import MQTT
 
 
 def main(machine):
@@ -23,16 +25,6 @@ def main(machine):
         # Create thread execute action
         # Collection resource action
 
-        # with concurrent.futures.ThreadPoolExecutor() as executor:
-        #     concurrencies = []
-        #     concurrencies.append(
-        #         executor.submit(resource_prod.exec, server_id),
-        #         executor.submit(process_prod.exec),
-        #         executor.submit(consumer_prod.callback, machine.get('ip')),
-        #     )
-        #     for f in concurrent.futures.as_completed(concurrencies):
-        #         pass
-
         resource_publisher = Thread(target=resource_prod.exec,
                                     args=(server_id, ))
         resource_publisher.start()
@@ -42,10 +34,16 @@ def main(machine):
         process_publisher.start()
 
         # Consumer action
-        # consumer = CollectionThread(target=consumer_prod.callback,
-        #                             args=(machine.get('ip'), ))
-        # consumer.start()
+        consumer = Thread(target=consumer_prod.callback,
+                          args=(machine.get('ip'), ))
+        consumer.daemon = True
+        consumer.start()
 
-        # consumer.join()
         resource_publisher.join()
         process_publisher.join()
+        consumer.join
+        if exit_event:
+            mqtt = MQTT()
+            client = mqtt._client
+            client.disconnect()
+            print('Terminated!')

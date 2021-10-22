@@ -5,8 +5,8 @@ from src.config import MQTTConf
 import os
 import signal
 from src.producer.mqtt import MQTT
-from src.thread.collection import exit_event
 from src.sk import IP
+from src.signal.event import exit_event
 
 
 class HandleAction:
@@ -65,6 +65,7 @@ class Observe:
 
         topic = f"{MAIN_TOPIC}{topic}/actions"
         subscribe.callback(self.on_message, topic, hostname=MQTTConf.HOST)
-        if exit_event.is_set():
-            print('Stop consumer')
-            return
+
+
+if __name__ == "__main__":
+    Observe().callback('abc')
