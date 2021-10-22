@@ -10,6 +10,8 @@ from threading import Thread
 import concurrent.futures
 import json
 
+from src.thread.collection import CollectionThread, exit_event
+
 
 class CollectorEmitter:
     """Class initial connection machine with MQTT broker"""
@@ -66,23 +68,36 @@ class ResourcesEmitter(CollectorEmitter):
     def __init__(self, server_info) -> None:
         super().__init__(server_info)
 
+    def produce(self, manager, tp, callback):
+        while True:
+            self.emit(manager=manager, tp=tp, payload=callback)
+            time.sleep(1)
+
     def collect_ram(self, manager, tp):
         while True:
             payload = Resource().ram()
             self.emit(manager=manager, tp=tp, payload=payload)
-            time.sleep(1)
+            time.sleep(3)
+            if exit_event.is_set():
+                break
+        print("Collect RAM thread is done")
 
     def collect_cpu(self, manager, tp):
         while True:
             payload = Resource().cpu()
             self.emit(manager=manager, tp=tp, payload=payload)
-            time.sleep(1)
+            if exit_event.is_set():
+                break
+        print("Collect CPU thread is done")
 
     def collect_disk(self, manager, tp):
         while True:
             payload = Resource().disk()
             self.emit(manager=manager, tp=tp, payload=payload)
-            time.sleep(1)
+            time.sleep(3)
+            if exit_event.is_set():
+                break
+        print("Collect Disk thread is done")
 
     def save_cpu_info(self, server_id):
         """SAVE list CPU in db"""
@@ -118,6 +133,8 @@ class ResourcesEmitter(CollectorEmitter):
             )
             self.emit(manager=manager, tp=tp, payload=payload)
             time.sleep(1)
+            if exit_event.is_set():
+                break
 
     def exec(self, server_id):
         """Split thread emit parallel resources collected"""
@@ -125,38 +142,28 @@ class ResourcesEmitter(CollectorEmitter):
         self.save_cpu_info(server_id)
         try:
             collect_all_resource_thread = \
-                Thread(target=self.collect_all,
-                       args=('resources', '*'))
+                CollectionThread(target=self.collect_all,
+                                 args=('resources', '*'))
             collect_all_resource_thread.start()
 
             collect_ram_thread = \
-                Thread(target=self.collect_ram, args=(
+                CollectionThread(target=self.collect_ram, args=(
                     'resources', 'ram'))
             collect_ram_thread.start()
 
             collect_cpu_thread = \
-                Thread(target=self.collect_cpu, args=(
+                CollectionThread(target=self.collect_cpu, args=(
                     'resources', 'cpu'))
             collect_cpu_thread.start()
 
             collect_disk_thread = \
-                Thread(target=self.collect_disk, args=(
+                CollectionThread(target=self.collect_disk, args=(
                     'resources', 'disk'))
             collect_disk_thread.start()
 
             collect_ram_thread.join()
             collect_cpu_thread.join()
             collect_disk_thread.join()
-            # with concurrent.futures.ThreadPoolExecutor() as executor:
-            #     concurrencies = []
-            #     concurrencies.append(
-            #         executor.submit(self.collect_all, 'resources', '*'),
-            #         executor.submit(self.collect_cpu, 'resources', 'cpu'),
-            #         executor.submit(self.collect_ram, 'resources', 'ram'),
-            #         executor.submit(self.collect_disk, 'resources', 'disk'),
-            #     )
-            #     for f in concurrent.futures.as_completed(concurrencies):
-            #         pass
 
         except Exception as ex:
             self.logger(type='ERROR', payload=str(ex))
@@ -174,3 +181,6 @@ class ProcessEmitter(CollectorEmitter):
                 'process': process
             })
             time.sleep(3)
+            if exit_event.is_set():
+                break
+        print('STOP Process')
