@@ -252,12 +252,14 @@ export default {
      * @param {Object} payload - Machine to get infor
      */
     machineDetail(payload) {
-      this.$router.push({
-        name: "resources",
-        params: {
-          id: payload.id,
-        },
-      });
+      const url = `detail/${payload.id}/resources`;
+      document.location.href = url;
+      // this.$router.push({
+      //   name: "resources",
+      //   params: {
+      //     id: payload.id,
+      //   },
+      // });
     },
 
     /**

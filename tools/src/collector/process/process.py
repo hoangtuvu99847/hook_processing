@@ -1,7 +1,6 @@
 # from src import PROCESS_PROPS
 import psutil
 from time import sleep
-
 from src.config import PROCESS_PROPERTIES_CONFIG_SHOWN
 
 

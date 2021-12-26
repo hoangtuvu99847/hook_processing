@@ -9,3 +9,7 @@ export const LOG_LEVEL = {
     WARNING: 'warning',
     SUCCESS: 'success'
 }
+export const PROCESS_ACTIONS = {
+    TERMINATE: 'terminate',
+    KILL: 'kill',
+}

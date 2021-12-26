@@ -5,7 +5,6 @@
       <div class="row">
         <side-bar v-if="false" />
         <main class="col-md-12 ms-sm-auto col-lg-12 px-md-4 pt-4">
-          
           <!--          NAVIGATION HERE-->
           <router-view></router-view>
         </main>

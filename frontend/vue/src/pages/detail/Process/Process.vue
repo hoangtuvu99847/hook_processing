@@ -16,13 +16,14 @@
                 type="text"
                 class="form-control"
                 placeholder="Input process name..."
+                v-model="search"
               />
             </div>
           </div>
 
           <div class="pt-3" style="overflow-y: scroll; height: 600px">
             <table class="table table-striped table-bordered">
-              <thead class="table-dark">
+              <thead class="table-secondary">
                 <tr>
                   <th scope="col">PID</th>
                   <th scope="col">Name</th>
@@ -52,6 +53,16 @@
                       style="color: #cce2f0"
                     ></i>
                     <i
+                      v-else-if="process.status === 'idle'"
+                      class="fas fa-dot-circle"
+                      style="color: #9c9df7"
+                    ></i>
+                    <i
+                      v-else-if="process.status === 'sleeping'"
+                      class="fas fa-dot-circle"
+                      style="color: #f7b69c"
+                    ></i>
+                    <i
                       v-else
                       class="fas fa-dot-circle"
                       style="color: #eb1a2f"
@@ -59,10 +70,30 @@
                     {{ process.status }}
                   </td>
                   <td>
-                    <i
-                      class="fas fa-times text-danger"
-                      title="Kill Process"
-                    ></i>
+                    <div
+                      class="btn-group mx-2"
+                      role="group"
+                      aria-label="First group"
+                    >
+                      <button
+                        class="btn btn-outline-secondary btn-sm"
+                        @click="terminateProcess(process)"
+                      >
+                        <i class="fas fa-hand-paper" title="Terminate"></i>
+                      </button>
+                    </div>
+                    <div
+                      class="btn-group"
+                      role="group"
+                      aria-label="First group"
+                    >
+                      <button
+                        class="btn btn-outline-danger btn-sm"
+                        @click="killProcess(process)"
+                      >
+                        <i class="fas fa-times" title="Kill Process"></i>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               </tbody>
@@ -77,20 +108,25 @@
 <script>
 import ws from "../../../../ws";
 import { DetaiMachine } from "../../../api/details";
-
+import { PROCESS_ACTIONS } from "../../../utils/constants";
 export default {
   name: "Process",
   data() {
     return {
       machine: {},
-      topic: {},
+      showProcessTopic: {},
       abccc: "",
       processes: [],
+      search: "",
+      ip: "",
+      notificationTopic: "",
     };
   },
   computed: {
     getProcessing() {
-      return this.processes;
+      return this.processes.filter((item) => {
+        return item.name.toLowerCase().includes(this.search);
+      });
     },
   },
   created() {
@@ -101,9 +137,17 @@ export default {
     onMessage() {
       ws.on("message", (topic, message) => {
         const data = JSON.parse(message.toString());
-        if (topic == this.topic) {
-          console.log("==>> Message of Process: ", data, "Topic: ", topic);
+        if (topic == this.showProcessTopic) {
+          // console.log("==>> Message of Process: ", data, "Topic: ", topic);
           this.processes = data.process;
+        } else if (topic == this.notificationTopic) {
+          console.log("ME: ", data);
+          if (data.code === "END_PROCESS_SUCCESS") {
+            this.$swal({
+              icon: "success",
+              title: "Kill process successful!",
+            });
+          }
         }
       });
     },
@@ -116,32 +160,77 @@ export default {
         })
         .then((val) => {
           const topic = val.ip_address;
+          this.ip = val.ip_address;
           this.subscribeProcessTopic(topic);
         });
     },
     subscribeProcessTopic(topic) {
       return Promise.resolve()
         .then(() => {
-          this.topic = `server/${topic}/process/all`;
+          this.showProcessTopic = `server/${topic}/process/all`;
+          this.interactProcessTopic = `server/${this.ip}/actions`;
+          this.notificationTopic = `server/${this.ip}/notifications`;
         })
         .then(() => {
-          ws.subscribe(this.topic, function (err, res) {
-            if (err) {
-              ws.publish("error", err);
-              return;
+          ws.subscribe(
+            [
+              this.showProcessTopic,
+              this.interactProcessTopic,
+              this.notificationTopic,
+            ],
+            function (err, res) {
+              if (err) {
+                ws.publish("error", err);
+                return;
+              }
+              console.log("Subscribe to topics of process", res);
             }
-            console.log("Subscribe to topics res ONPROCESS", res);
-          });
+          );
         });
+    },
+    terminateProcess(process) {
+      this.$swal({
+        icon: "question",
+        title: `Do you want terminate ${process.name} process ?`,
+        showDenyButton: true,
+      }).then((result) => {
+        if (result.value) {
+          const payload = JSON.stringify({
+            type: PROCESS_ACTIONS.TERMINATE,
+            pid: process.pid,
+          });
+          // Emit message to broker
+          ws.publish(this.interactProcessTopic, payload);
+        }
+      });
+    },
+    killProcess(process) {
+      console.log("Kill: ", process);
     },
   },
   watch: {
-    getProcessing: function (val) {
-      console.log(":: Watch : ->  process: ", val);
-    },
+    // getProcessing: function (val) {
+    //   console.log(":: Watch : ->  process: ", val);
+    // },
   },
 };
 </script>
 
-<style>
-</style>
+<style scoped>
+.btn-sm {
+  padding: 5px 10px 5px 10px;
+  font-size: 10px;
+}
+.swal2-title {
+  position: relative;
+  max-width: 100%;
+  margin: 0;
+  padding: 0.8 em 1 em 0;
+  color: #595959;
+  font-size: 1.2em;
+  font-weight: 600;
+  text-align: center;
+  text-transform: none;
+  word-wrap: break-word;
+}
+</style>>

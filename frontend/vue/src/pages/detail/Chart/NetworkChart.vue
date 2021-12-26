@@ -96,20 +96,20 @@ export default {
     },
   },
   beforeDestroy() {
-    console.log("========> THIS.TOPIC: ", this.topic);
-    return Promise.resolve()
-      .then(() => {
-        ws.unsubscribe(this.topic, function (err, res) {
-          if (err) {
-            ws.publish("error", err);
-            return;
-          }
-          console.log("Unsubscribe to topics res", res);
-        });
-      })
-      .then(() => {
-        console.log("UNSUBSCRIBE TOPIC SUCCESS");
-      });
+    // console.log("========> THIS.TOPIC: ", this.topic);
+    // return Promise.resolve()
+    //   .then(() => {
+    //     ws.unsubscribe(this.topic, function (err, res) {
+    //       if (err) {
+    //         ws.publish("error", err);
+    //         return;
+    //       }
+    //       console.log("Unsubscribe to topics res", res);
+    //     });
+    //   })
+    //   .then(() => {
+    //     console.log("UNSUBSCRIBE TOPIC SUCCESS");
+    //   });
   },
   watch: {
     dataMachine: function (val) {

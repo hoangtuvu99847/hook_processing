@@ -1,4 +1,3 @@
-import time
 import os
 import sys
 from src.main import main as run_collection_tool
@@ -20,6 +19,6 @@ if __name__ == '__main__':
         run_collection_tool(machine)
     except KeyboardInterrupt:
         try:
-            sys.exit()
+            sys.exit(0)
         except SystemExit:
             os._exit(0)

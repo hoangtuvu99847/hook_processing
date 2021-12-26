@@ -3,28 +3,34 @@
     <div id="content-wrapper" class="d-flex flex-column">
       <!-- Main Content -->
       <div id="content">
-        <!-- Topbar -->
-        <!-- End of Topbar -->
-
-        <!-- Begin Page Content -->
         <div class="container-fluid">
           <ul class="nav nav-tabs mb-2">
             <li class="nav-item">
-              <button class="nav-link active" @click="navigateResource">
+              <a
+                :class="['nav-link', endPoint === 'resources' ? 'active' : '']"
+                href="resources"
+              >
                 Resources
-              </button>
+              </a>
             </li>
             <li class="nav-item">
-              <button class="nav-link" @click="navigateProcess">Process</button>
+              <a
+                :class="['nav-link', endPoint === 'process' ? 'active' : '']"
+                href="process"
+                >Process</a
+              >
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#">Process</a>
+              <a
+                :class="['nav-link', endPoint === 'logs' ? 'active' : '']"
+                href="logs"
+                >Logs</a
+              >
             </li>
           </ul>
           <!-- Content Row -->
           <router-view />
         </div>
-        <!-- /.container-fluid -->
       </div>
       <!-- End of Main Content -->
     </div>
@@ -34,6 +40,15 @@
 <script>
 export default {
   name: "Detail",
+  data() {
+    return {
+      endPoint: "",
+    };
+  },
+  created() {
+    console.log(this.$route.path);
+    this.endPoint = this.$route.path.split("/").slice(-1)[0];
+  },
   methods: {
     navigateResource() {
       this.$router.push({
@@ -44,6 +59,11 @@ export default {
       this.$router.push({
         name: "process",
       });
+    },
+  },
+  watch: {
+    endPoint: function (val) {
+      console.log(val);
     },
   },
 };

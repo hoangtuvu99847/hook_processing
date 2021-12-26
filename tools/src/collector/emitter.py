@@ -47,17 +47,6 @@ class CollectorEmitter:
         infot = self.client.publish(topic, bullet)
         infot.wait_for_publish()
 
-    def disconnect(self) -> None:
-        topic = f"{MAIN_TOPIC}disconnected"
-        payload = dict(
-            ip_address=self.server_info.get('ip'),
-            hostname=self.server_info.get('hostname')
-        )
-        infot = self.client.publish(
-            topic=topic, payload=json.dumps(payload).encode('utf-8'))
-        print('::::::::: Terminating... ::::::::::')
-        infot.wait_for_publish()
-
     def logger(self, type='SUCCESS', payload=None):
         topic = 'logger/event'
         self.emit(tp=topic, payload=payload)

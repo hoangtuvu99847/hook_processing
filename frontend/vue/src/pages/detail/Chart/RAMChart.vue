@@ -130,19 +130,19 @@ export default {
     },
   },
   beforeDestroy() {
-    return Promise.resolve()
-      .then(() => {
-        ws.unsubscribe(this.topic, function (err, res) {
-          if (err) {
-            ws.publish("error", err);
-            return;
-          }
-          console.log("Unsubscribe to topics res", res);
-        });
-      })
-      .then(() => {
-        console.log("UNSUBSCRIBE TOPIC SUCCESS");
-      });
+    // return Promise.resolve()
+    //   .then(() => {
+    //     ws.unsubscribe(this.topic, function (err, res) {
+    //       if (err) {
+    //         ws.publish("error", err);
+    //         return;
+    //       }
+    //       console.log("Unsubscribe to topics res", res);
+    //     });
+    //   })
+    //   .then(() => {
+    //     console.log("UNSUBSCRIBE TOPIC SUCCESS");
+    //   });
   },
   watch: {
     data: function (val) {
