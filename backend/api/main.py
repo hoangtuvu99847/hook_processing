@@ -41,7 +41,7 @@ def _init_db():
 
 
 @app.get("/")
-def list():
+def list_server():
     db = _init_db()
     cursor = db.cursor(dictionary=True)
 
@@ -72,13 +72,13 @@ def get_cpu_info(server_id):
 
 
 @app.get("/server/{id}")
-def detail(id):
+def detail(_id):
     db = _init_db()
     cursor = db.cursor(dictionary=True)
     sql = """
         SELECT * FROM server WHERE id = %s
     """
-    val = (id, )
+    val = (_id, )
     cursor.execute(sql, val)
     server = cursor.fetchone()
     return server
