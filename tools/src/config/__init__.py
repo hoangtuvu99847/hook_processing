@@ -9,14 +9,14 @@ PROCESS_PROPERTIES_CONFIG_SHOWN = ['name', 'username',
 
 
 class MySQLConf:
-    HOST = '35.240.161.144'
+    HOST = '10.130.64.113'
     USER = 'vunv'
     PASSWORD = 'Vu@1479825'
     DB = 'hook_processing'
 
 
 class MQTTConf:
-    HOST = '35.240.161.144'
+    HOST = '10.130.64.113'
 
     class PORT:
         TCP = 1883
