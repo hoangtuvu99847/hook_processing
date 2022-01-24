@@ -5,12 +5,6 @@ import os
 import uvicorn
 import mysql.connector
 
-
-load_dotenv()
-
-HOST = os.environ.get('HOST')
-PORT = os.environ.get('PORT')
-
 app = FastAPI()
 
 origins = ["*"]
@@ -32,8 +26,8 @@ def dict_factory(cursor, row):
 
 def _init_db():
     mydb = mysql.connector.connect(
-        host="35.240.161.144",
-        user="vunv",
+        host="10.130.64.113",
+        user="vunv79",
         password="Vu@1479825",
         database="hook_processing"
     )
@@ -63,7 +57,7 @@ def get_cpu_info(server_id):
                 JOIN server s on s.id = cpu.server_id
         WHERE server_id = %s
     """
-    val = (server_id, )
+    val = (server_id,)
     cursor.execute(sql, val)
     cpu_server = cursor.fetchone()
     if cpu_server.get('data'):
@@ -71,14 +65,14 @@ def get_cpu_info(server_id):
     return cpu_server
 
 
-@app.get("/server/{id}")
+@app.get("/server/{_id}")
 def detail(_id):
     db = _init_db()
     cursor = db.cursor(dictionary=True)
     sql = """
         SELECT * FROM server WHERE id = %s
     """
-    val = (_id, )
+    val = (_id,)
     cursor.execute(sql, val)
     server = cursor.fetchone()
     return server
