@@ -7,29 +7,22 @@
           <ul class="nav nav-tabs mb-2">
             <li class="nav-item">
               <a
-                :class="['nav-link', endPoint === 'resources' ? 'active' : '']"
-                href="resources"
+                  :class="['nav-link', endPoint === 'resources' ? 'active' : '']"
+                  href="resources"
               >
                 Resources
               </a>
             </li>
             <li class="nav-item">
               <a
-                :class="['nav-link', endPoint === 'process' ? 'active' : '']"
-                href="process"
-                >Process</a
-              >
-            </li>
-            <li class="nav-item">
-              <a
-                :class="['nav-link', endPoint === 'logs' ? 'active' : '']"
-                href="logs"
-                >Logs</a
+                  :class="['nav-link', endPoint === 'logs' ? 'active' : '']"
+                  href="logs"
+              >Logs</a
               >
             </li>
           </ul>
           <!-- Content Row -->
-          <router-view />
+          <router-view/>
         </div>
       </div>
       <!-- End of Main Content -->

@@ -1,4 +1,3 @@
-
 from src.const import DISK_USAGE_PATH, THRESHOLD, WAIT_TIME
 from psutil._common import bytes2human
 from typing import Any, Dict
@@ -31,9 +30,9 @@ class Resource:
             list_cpu: list = []
             cpu_percent: Dict[str, Any]
             for i, core_per in enumerate(cpu_per):
-                cpu_dict: Dict[str, Any] = {}
-                cpu_dict['cpu_name'] = 'cpu_{count}'.format(count=i+1)
-                cpu_dict['percent'] = core_per
+                cpu_dict: Dict[str, Any] = {
+                    'cpu_name': 'cpu_{count}'.format(count=i + 1),
+                    'percent': core_per}
                 list_cpu.append(cpu_dict)
             cpu_percent: Dict = psutil.cpu_percent()
             return dict(
@@ -59,3 +58,37 @@ class Resource:
 
         except Exception as ex:
             print('[ERROR] :: Collection :: Resource :: disk() -> ', ex)
+
+    @staticmethod
+    def net():
+        try:
+            network = psutil.net_io_counters()
+            sent: str = bytes2human(network.bytes_sent)
+            recv: str = bytes2human(network.bytes_recv)
+            error_in: int = network.errin
+            error_out: int = network.errout
+            return dict(
+                sent=sent,
+                recv=recv,
+                error_in=error_in,
+                error_out=error_out,
+            )
+        except Exception as ex:
+            print('[ERROR] :: Collection :: Resource :: net() -> ', ex)
+
+    @staticmethod
+    def users():
+        try:
+            users = psutil.users()
+            sent: str = bytes2human(network.bytes_sent)
+            recv: str = bytes2human(network.bytes_recv)
+            error_in: int = network.errin
+            error_out: int = network.errout
+            return dict(
+                sent=sent,
+                recv=recv,
+                error_in=error_in,
+                error_out=error_out,
+            )
+        except Exception as ex:
+            print('[ERROR] :: Collection :: Resource :: net() -> ', ex)

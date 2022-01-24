@@ -29,7 +29,7 @@ class CollectorEmitter:
         self.prefix_topic = MAIN_TOPIC
         self.payload = {}
 
-    def emit(self, manager=None, tp="", payload={}) -> None:
+    def emit(self, manager=None, tp="", payload=None) -> None:
         """
         Topic format sample:
             server/192.168.0.1/process/ram
@@ -64,6 +64,14 @@ class ResourcesEmitter(CollectorEmitter):
     def collect_ram(self, manager, tp):
         while True:
             payload = Resource().ram()
+            self.emit(manager=manager, tp=tp, payload=payload)
+            time.sleep(3)
+            if exit_event.is_set():
+                break
+
+    def collect_network(self, manager, tp):
+        while True:
+            payload = Resource().net()
             self.emit(manager=manager, tp=tp, payload=payload)
             time.sleep(3)
             if exit_event.is_set():
@@ -142,6 +150,11 @@ class ResourcesEmitter(CollectorEmitter):
                     'resources', 'cpu'))
             collect_cpu_thread.start()
 
+            collect_net_thread = \
+                Thread(target=self.collect_network, args=(
+                    'resources', 'net'))
+            collect_net_thread.start()
+
             collect_disk_thread = \
                 Thread(target=self.collect_disk, args=(
                     'resources', 'disk'))
@@ -149,6 +162,7 @@ class ResourcesEmitter(CollectorEmitter):
 
             collect_ram_thread.join()
             collect_cpu_thread.join()
+            collect_net_thread.join()
             collect_disk_thread.join()
 
         except Exception as ex:

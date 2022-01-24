@@ -9,7 +9,6 @@ print("+          -- Nguyễn Viết Vũ --            +")
 print("+        Project: Hook Processing          +")
 print("+==========================================+")
 
-
 if __name__ == '__main__':
     machine = {
         'hostname': HOSTNAME,

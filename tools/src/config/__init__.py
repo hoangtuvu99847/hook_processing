@@ -10,7 +10,7 @@ PROCESS_PROPERTIES_CONFIG_SHOWN = ['name', 'username',
 
 class MySQLConf:
     HOST = '10.130.64.113'
-    USER = 'vunv'
+    USER = 'vunv79'
     PASSWORD = 'Vu@1479825'
     DB = 'hook_processing'
 
