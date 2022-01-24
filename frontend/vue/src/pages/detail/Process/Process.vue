@@ -13,89 +13,89 @@
             </div>
             <div class="col-5">
               <input
-                type="text"
-                class="form-control"
-                placeholder="Input process name..."
-                v-model="search"
+                  type="text"
+                  class="form-control"
+                  placeholder="Input process name..."
+                  v-model="search"
               />
             </div>
           </div>
 
-          <div class="pt-3" style="overflow-y: scroll; height: 600px">
+          <div class="pt-3" style="overflow-y: scroll; height: 865px">
             <table class="table table-striped table-bordered">
               <thead class="table-secondary">
-                <tr>
-                  <th scope="col">PID</th>
-                  <th scope="col">Name</th>
-                  <th scope="col">CPU(%)</th>
-                  <th scope="col">RAM(%)</th>
-                  <th scope="col">User</th>
-                  <th scope="col">Status</th>
-                  <th scope="col">Action</th>
-                </tr>
+              <tr>
+                <th scope="col">PID</th>
+                <th scope="col" style="width: 50px">Name</th>
+                <th scope="col">CPU(%)</th>
+                <th scope="col">RAM(%)</th>
+                <th scope="col">User</th>
+                <th scope="col">Status</th>
+                <th scope="col">Action</th>
+              </tr>
               </thead>
               <tbody>
-                <tr v-for="(process, idx) in getProcessing" :key="idx">
-                  <td style="font-weight: bold">{{ process.pid }}</td>
-                  <td>{{ process.name }}</td>
-                  <td>{{ process.cpu_percent }}</td>
-                  <td>{{ process.memory_percent }}</td>
-                  <td>{{ process.username }}</td>
-                  <td>
-                    <i
+              <tr v-for="(process, idx) in getProcessing" :key="idx">
+                <td style="font-weight: bold">{{ process.pid }}</td>
+                <td>{{ process.name }}</td>
+                <td>{{ process.cpu_percent }}</td>
+                <td>{{ process.memory_percent }}</td>
+                <td>{{ process.username }}</td>
+                <td>
+                  <i
                       v-if="process.status === 'running'"
                       class="fas fa-dot-circle"
                       style="color: #45f00c"
-                    ></i>
-                    <i
+                  ></i>
+                  <i
                       v-else-if="process.status === 'zombie'"
                       class="fas fa-dot-circle"
                       style="color: #cce2f0"
-                    ></i>
-                    <i
+                  ></i>
+                  <i
                       v-else-if="process.status === 'idle'"
                       class="fas fa-dot-circle"
                       style="color: #9c9df7"
-                    ></i>
-                    <i
+                  ></i>
+                  <i
                       v-else-if="process.status === 'sleeping'"
                       class="fas fa-dot-circle"
                       style="color: #f7b69c"
-                    ></i>
-                    <i
+                  ></i>
+                  <i
                       v-else
                       class="fas fa-dot-circle"
                       style="color: #eb1a2f"
-                    ></i>
-                    {{ process.status }}
-                  </td>
-                  <td>
-                    <div
+                  ></i>
+                  {{ process.status }}
+                </td>
+                <td>
+                  <div
                       class="btn-group mx-2"
                       role="group"
                       aria-label="First group"
-                    >
-                      <button
+                  >
+                    <button
                         class="btn btn-outline-secondary btn-sm"
                         @click="terminateProcess(process)"
-                      >
-                        <i class="fas fa-hand-paper" title="Terminate"></i>
-                      </button>
-                    </div>
-                    <div
+                    >
+                      <i class="fas fa-hand-paper" title="Terminate"></i>
+                    </button>
+                  </div>
+                  <div
                       class="btn-group"
                       role="group"
                       aria-label="First group"
-                    >
-                      <button
+                  >
+                    <button
                         class="btn btn-outline-danger btn-sm"
                         @click="killProcess(process)"
-                      >
-                        <i class="fas fa-times" title="Kill Process"></i>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
+                    >
+                      <i class="fas fa-times" title="Kill Process"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
               </tbody>
             </table>
           </div>
@@ -107,15 +107,15 @@
 
 <script>
 import ws from "../../../../ws";
-import { DetaiMachine } from "../../../api/details";
-import { PROCESS_ACTIONS } from "../../../utils/constants";
+import {DetailMachine} from "@/api/details";
+import {PROCESS_ACTIONS} from "@/utils/constants";
+
 export default {
   name: "Process",
   data() {
     return {
       machine: {},
       showProcessTopic: {},
-      abccc: "",
       processes: [],
       search: "",
       ip: "",
@@ -137,10 +137,10 @@ export default {
     onMessage() {
       ws.on("message", (topic, message) => {
         const data = JSON.parse(message.toString());
-        if (topic == this.showProcessTopic) {
+        if (topic === this.showProcessTopic) {
           // console.log("==>> Message of Process: ", data, "Topic: ", topic);
           this.processes = data.process;
-        } else if (topic == this.notificationTopic) {
+        } else if (topic === this.notificationTopic) {
           console.log("ME: ", data);
           if (data.code === "END_PROCESS_SUCCESS") {
             this.$swal({
@@ -152,41 +152,41 @@ export default {
       });
     },
     getMachineDetail() {
-      const { id } = this.$route.params;
-      DetaiMachine(id)
-        .then((response) => {
-          this.machine = response.data;
-          return response.data;
-        })
-        .then((val) => {
-          const topic = val.ip_address;
-          this.ip = val.ip_address;
-          this.subscribeProcessTopic(topic);
-        });
+      const {id} = this.$route.params;
+      DetailMachine(id)
+          .then((response) => {
+            this.machine = response.data;
+            return response.data;
+          })
+          .then((val) => {
+            const topic = val.ip_address;
+            this.ip = val.ip_address;
+            this.subscribeProcessTopic(topic);
+          });
     },
     subscribeProcessTopic(topic) {
       return Promise.resolve()
-        .then(() => {
-          this.showProcessTopic = `server/${topic}/process/all`;
-          this.interactProcessTopic = `server/${this.ip}/actions`;
-          this.notificationTopic = `server/${this.ip}/notifications`;
-        })
-        .then(() => {
-          ws.subscribe(
-            [
-              this.showProcessTopic,
-              this.interactProcessTopic,
-              this.notificationTopic,
-            ],
-            function (err, res) {
-              if (err) {
-                ws.publish("error", err);
-                return;
-              }
-              console.log("Subscribe to topics of process", res);
-            }
-          );
-        });
+          .then(() => {
+            this.showProcessTopic = `server/${topic}/process/all`;
+            this.interactProcessTopic = `server/${this.ip}/actions`;
+            this.notificationTopic = `server/${this.ip}/notifications`;
+          })
+          .then(() => {
+            ws.subscribe(
+                [
+                  this.showProcessTopic,
+                  this.interactProcessTopic,
+                  this.notificationTopic,
+                ],
+                function (err, res) {
+                  if (err) {
+                    ws.publish("error", err);
+                    return;
+                  }
+                  console.log("Subscribe to topics of process", res);
+                }
+            );
+          });
     },
     terminateProcess(process) {
       this.$swal({
@@ -221,11 +221,12 @@ export default {
   padding: 5px 10px 5px 10px;
   font-size: 10px;
 }
+
 .swal2-title {
   position: relative;
   max-width: 100%;
   margin: 0;
-  padding: 0.8 em 1 em 0;
+  padding: 0.8em 1em 0;
   color: #595959;
   font-size: 1.2em;
   font-weight: 600;

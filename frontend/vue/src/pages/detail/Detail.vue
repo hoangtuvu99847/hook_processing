@@ -10,7 +10,7 @@
                   :class="['nav-link', endPoint === 'resources' ? 'active' : '']"
                   href="resources"
               >
-                Resources
+                Resources and Process
               </a>
             </li>
             <li class="nav-item">

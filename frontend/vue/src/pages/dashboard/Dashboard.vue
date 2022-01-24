@@ -2,20 +2,20 @@
   <div>
     <div class="row px-2">
       <div
-        class="card shadow"
-        v-for="machine in machines"
-        :class="[machine.status === 0 && 'border-danger']"
-        :key="machine.machine.hostname"
-        style="width: 18rem; margin-right: 20px; margin-bottom: 20px"
+          class="card shadow"
+          v-for="machine in machines"
+          :class="[machine.status === 0 && 'border-danger']"
+          :key="machine.machine.hostname"
+          style="width: 18rem; margin-right: 20px; margin-bottom: 20px"
       >
         <div class="card-body">
           <div class="d-flex bd-highlight">
             <h5 class="card-title">{{ machine.machine.hostname }}</h5>
             <div class="ms-auto bd-highlight">
               <a
-                class="btn btn-sm btn-outline-primary"
-                @click="machineDetail(machine)"
-                >Details</a
+                  class="btn btn-sm btn-outline-primary"
+                  @click="machineDetail(machine)"
+              >Details</a
               >
             </div>
           </div>
@@ -41,8 +41,8 @@
                 </div>
                 <i class="fas fa-microchip text-success fa-lg"></i>
                 <span
-                  class="font-weight-bold text-danger"
-                  style="margin-left: 10px"
+                    class="font-weight-bold text-danger"
+                    style="margin-left: 10px"
                 >
                   {{ machine.resource.cpu.avg }} %</span
                 >
@@ -57,9 +57,9 @@
                 </div>
                 <i class="fas fa-memory text-info fa-lg"></i>
                 <span
-                  class="font-weight-bold text-danger"
-                  style="margin-left: 8px"
-                  >{{ machine.resource.ram.percent }}%</span
+                    class="font-weight-bold text-danger"
+                    style="margin-left: 8px"
+                >{{ machine.resource.ram.percent }}%</span
                 >
               </div>
             </div>
@@ -74,9 +74,9 @@
                 </div>
                 <i class="fas fa-hdd text-primary fa-lg"></i>
                 <span
-                  class="font-weight-bold text-danger"
-                  style="margin-left: 8px"
-                  >{{ machine.resource.disk.percent }}%</span
+                    class="font-weight-bold text-danger"
+                    style="margin-left: 8px"
+                >{{ machine.resource.disk.percent }}%</span
                 >
               </div>
             </div>
@@ -88,13 +88,13 @@
                   >
                 </div>
                 <i
-                  class="fas fa-thermometer-three-quarters fa-lg text-danger"
-                  style="margin-left: 5px"
+                    class="fas fa-thermometer-three-quarters fa-lg text-danger"
+                    style="margin-left: 5px"
                 ></i>
                 <span
-                  class="font-weight-bold text-danger"
-                  style="margin-left: 17px"
-                  >{{ machine.resource.disk.percent }}%</span
+                    class="font-weight-bold text-danger"
+                    style="margin-left: 17px"
+                >{{ machine.resource.disk.percent }}%</span
                 >
                 <div></div>
               </div>
@@ -109,7 +109,7 @@
 <script>
 // import mqtt from "mqtt";
 import ws from "../../../ws";
-import { listServer } from "../../api/dashboard";
+import {listServer} from "../../api/dashboard";
 
 export default {
   name: "Dashboard",
@@ -177,9 +177,9 @@ export default {
       console.log("Disconnect message: ", payload);
 
       const idx = this.machines.findIndex(
-        (el) =>
-          el.machine.hostname === payload.hostname &&
-          el.machine.ip_address === payload.ip_address
+          (el) =>
+              el.machine.hostname === payload.hostname &&
+              el.machine.ip_address === payload.ip_address
       );
       if (idx !== -1) {
         // Disconnected!
@@ -195,9 +195,9 @@ export default {
       payload["status"] = 1;
       // Check if machine is existing monitor -> Update, else -> Push to list machines
       const idx = this.machines.findIndex(
-        (el) =>
-          el.machine.hostname === payload.machine.hostname &&
-          el.machine.ip_address === payload.machine.ip_address
+          (el) =>
+              el.machine.hostname === payload.machine.hostname &&
+              el.machine.ip_address === payload.machine.ip_address
       );
       if (idx === -1) {
         this.machines = [...this.machines, payload];
@@ -227,33 +227,32 @@ export default {
 
       // Subscribe event of all machine
       return Promise.resolve()
-        .then(() => topics.map((topic) => `server/${topic.name}/resources/*`))
-        .then((ip) => {
-          ws.subscribe(ip, function (err, res) {
-            if (err) {
-              ws.publish("error", "Hello mqtt");
-              return;
-            }
-            // this.subscribeSuccess = true;
-            console.log("Subscribe to topics res", res);
+          .then(() => topics.map((topic) => `server/${topic.name}/resources/*`))
+          .then((ip) => {
+            ws.subscribe(ip, function (err, res) {
+              if (err) {
+                ws.publish("error", "Hello mqtt");
+                return;
+              }
+              // this.subscribeSuccess = true;
+              console.log("Subscribe to topics res", res);
+            });
+            ws.subscribe(ip, function (err, res) {
+              if (err) {
+                ws.publish("error", "Hello mqtt");
+                return;
+              }
+              // this.subscribeSuccess = true;
+              console.log("Subscribe to topics res", res);
+            });
           });
-          ws.subscribe(ip, function (err, res) {
-            if (err) {
-              ws.publish("error", "Hello mqtt");
-              return;
-            }
-            // this.subscribeSuccess = true;
-            console.log("Subscribe to topics res", res);
-          });
-        });
     },
     /**
      * Function get detail info machine resource
      * @param {Object} payload - Machine to get infor
      */
     machineDetail(payload) {
-      const url = `detail/${payload.id}/resources`;
-      document.location.href = url;
+      document.location.href = `detail/${payload.id}/resources`;
       // this.$router.push({
       //   name: "resources",
       //   params: {
@@ -267,31 +266,31 @@ export default {
      */
     handleGetListServer() {
       listServer()
-        .then((response) => {
-          console.log(response);
-          if (response.status === 200) {
-            return response.data;
-          }
-        })
-        .then((data) => {
-          console.log("LIST: ", data);
-          if (data) {
-            const topics = data.map((e) => ({
-              name: e.ip_address,
-              id: e.id,
-            }));
-            this.topics = topics;
-            return topics;
-          }
-        })
-        .then((topics) => {
-          // Init connect MQTT
-          this.createConnection();
+          .then((response) => {
+            console.log('RES: ', response);
+            if (response.status === 200) {
+              return response.data;
+            }
+          })
+          .then((data) => {
+            console.log("LIST: ", data);
+            if (data) {
+              const topics = data.map((e) => ({
+                name: e.ip_address,
+                id: e.id,
+              }));
+              this.topics = topics;
+              return topics;
+            }
+          })
+          .then((topics) => {
+            // Init connect MQTT
+            this.createConnection();
 
-          // Handle on event MQTT
-          this.handleEventMQTT(topics);
-        })
-        .catch((error) => console.log(error));
+            // Handle on event MQTT
+            this.handleEventMQTT(topics);
+          })
+          .catch((error) => console.log(error));
     },
   },
   beforeDestroy() {
