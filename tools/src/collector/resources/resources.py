@@ -24,7 +24,8 @@ class Resource:
         except Exception as ex:
             print('[ERROR] :: Collection :: Resource :: mem() -> ', ex)
 
-    def cpu(self) -> Dict[str, Any]:
+    @staticmethod
+    def cpu() -> Dict[str, Any]:
         try:
             cpu_per = psutil.cpu_percent(percpu=True, interval=3)
             list_cpu: list = []

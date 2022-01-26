@@ -19,7 +19,7 @@ class HandleAction:
         """When process execute succesful -> Send notification opposite client"""
         mqtt = MQTT()
         # Get client instance
-        client = mqtt._client
+        client = mqtt.get_client
         message = {"code": STATUS_KILL_PROCESS.END_PROCESS_SUCCESS}
         bullet = json.dumps(message).encode('utf-8')
         client.publish(self._notification_topic, bullet)
@@ -44,7 +44,8 @@ class Observe:
     Example message: 
     """
 
-    def handle(self, message):
+    @staticmethod
+    def handle(message):
         handler = HandleAction()
         if message['type'] == ACTION_PROCESS.KILL:
             handler.kill_process(message.get('pid'))
@@ -65,6 +66,14 @@ class Observe:
 
         topic = f"{MAIN_TOPIC}{topic}/actions"
         subscribe.callback(self.on_message, topic, hostname=MQTTConf.HOST)
+
+
+class Logger:
+    def warning(self, msg):
+        pass
+
+    def danger(self, msg):
+        pass
 
 
 if __name__ == "__main__":

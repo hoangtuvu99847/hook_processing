@@ -3,6 +3,13 @@ THRESHOLD = 100 * 1024 * 1024
 DISK_USAGE_PATH = '/'
 PROCESS_PROPS = ['name', 'username']
 MAIN_TOPIC = 'server/'
+DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
+
+
+class Status:
+    DISCONNECTED_STATUS = 0
+    CONNECTED_STATUS = 1
+    EXITED = -1
 
 
 class STATUS_KILL_PROCESS:

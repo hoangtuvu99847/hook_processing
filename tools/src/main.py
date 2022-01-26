@@ -26,7 +26,7 @@ def main(machine):
         # Collection resource action
 
         resource_publisher = Thread(target=resource_prod.exec,
-                                    args=(server_id, ))
+                                    args=(server_id,))
         resource_publisher.start()
 
         # Collection process action
@@ -35,7 +35,7 @@ def main(machine):
 
         # Consumer action
         consumer = Thread(target=consumer_prod.callback,
-                          args=(machine.get('ip'), ))
+                          args=(machine.get('ip'),))
         consumer.daemon = True
         consumer.start()
 
@@ -44,6 +44,6 @@ def main(machine):
         consumer.join
         if exit_event:
             mqtt = MQTT()
-            client = mqtt._client
+            client = mqtt.get_client
             client.disconnect()
             print('Terminated!')

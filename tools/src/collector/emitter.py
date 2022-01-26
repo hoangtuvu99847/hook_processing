@@ -1,13 +1,12 @@
 import time
-
-from paho.mqtt.client import Client
-from src.const import MAIN_TOPIC
+from src.const import MAIN_TOPIC, DATETIME_FORMAT
 from src.producer.mqtt import MQTT
 from src.collector.resources.resources import Resource
 from src.collector.process.process import Process
 from src.db.models import CPU
 from threading import Thread
 import json
+from datetime import datetime
 
 from src.signal.event import exit_event
 
@@ -19,7 +18,7 @@ class CollectorEmitter:
     try:
         mqtt = MQTT()
         # Get client instance
-        client = mqtt._client
+        client = mqtt.get_client
     except Exception as ex:
         raise
 
@@ -29,12 +28,15 @@ class CollectorEmitter:
         self.prefix_topic = MAIN_TOPIC
         self.payload = {}
 
-    def emit(self, manager=None, tp="", payload=None) -> None:
+    def emit(self, manager=None, tp="", payload=None, is_global=False) -> None:
         """
         Topic format sample:
             server/192.168.0.1/process/ram
         """
-        topic = f"{self.prefix_topic}{self.server_info.get('ip')}/{manager}/{tp}"
+        if not is_global:
+            topic = f"{self.prefix_topic}{self.server_info.get('ip')}/{manager}/{tp}"
+        else:
+            topic = f"{manager}/{tp}"
         if payload:
             payload.update(dict(
                 id=self._server_id,
@@ -64,6 +66,25 @@ class ResourcesEmitter(CollectorEmitter):
     def collect_ram(self, manager, tp):
         while True:
             payload = Resource().ram()
+            percent = payload.get('percent')
+            if percent > 50:
+                log_data = {
+                    'type': 'danger',
+                    'resource': 'ram',
+                    'ip': self.server_info.get('ip'),
+                    'percent': percent,
+                    'time': datetime.now().strftime(DATETIME_FORMAT)
+                }
+                self.emit(manager='logger', tp='ram', payload=log_data, is_global=True)
+            elif payload.get('percent') > 5:
+                log_data = {
+                    'type': 'warning',
+                    'resource': 'ram',
+                    'ip': self.server_info.get('ip'),
+                    'percent': percent,
+                    'time': datetime.now().strftime(DATETIME_FORMAT)
+                }
+                self.emit(manager='logger', tp='ram', payload=log_data, is_global=True)
             self.emit(manager=manager, tp=tp, payload=payload)
             time.sleep(3)
             if exit_event.is_set():
@@ -80,6 +101,26 @@ class ResourcesEmitter(CollectorEmitter):
     def collect_cpu(self, manager, tp):
         while True:
             payload = Resource().cpu()
+            percent: float = payload.get('avg')
+            if percent > 90:
+                log_data = {
+                    'type': 'danger',
+                    'resource': 'cpu',
+                    'ip': self.server_info.get('ip'),
+                    'percent': percent,
+                    'time': datetime.now().strftime(DATETIME_FORMAT)
+                }
+                self.emit(manager='logger', tp='cpu', payload=log_data, is_global=True)
+            elif payload.get('avg') > 5:
+                log_data = {
+                    'type': 'warning',
+                    'resource': 'cpu',
+                    'ip': self.server_info.get('ip'),
+                    'percent': percent,
+                    'time': datetime.now().strftime(DATETIME_FORMAT)
+                }
+                self.emit(manager='logger', tp='cpu', payload=log_data, is_global=True)
+
             self.emit(manager=manager, tp=tp, payload=payload)
             if exit_event.is_set():
                 break
@@ -166,7 +207,12 @@ class ResourcesEmitter(CollectorEmitter):
             collect_disk_thread.join()
 
         except Exception as ex:
-            self.logger(type='ERROR', payload=str(ex))
+            log_data = {
+                'type': 'warning',
+                'resource': 'cpu',
+                'msg': f"Machine: {self.server_info.get('ip')}: ERROR: {ex}"
+            }
+            self.emit(manager='logger', tp='error', payload=log_data, is_global=True)
             raise
 
 
