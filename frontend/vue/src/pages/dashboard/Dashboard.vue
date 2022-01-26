@@ -1,143 +1,153 @@
 <template>
-  <div>
-    <div class="row px-2">
-      <div
-          class="card shadow"
-          v-for="machine in machines"
-          :class="[machine.status === 0 && 'border-danger']"
-          :key="machine.machine.hostname"
-          style="width: 18rem; margin-right: 20px; margin-bottom: 20px"
-      >
-        <div class="card-body">
-          <div class="d-flex bd-highlight">
-            <h5 class="card-title">{{ machine.machine.hostname }}</h5>
-            <div class="ms-auto bd-highlight">
-              <a
-                  class="btn btn-sm btn-outline-primary"
-                  @click="machineDetail(machine)"
-              >Details</a
-              >
+  <div class="row">
+    <div class="col">
+      <div class="row px-2">
+        <div
+            class="card shadow"
+            v-for="machine in machines"
+            :class="[machineStatus[machine.machine.ip_address] === 0 && 'border-danger']"
+            :key="machine.machine.hostname"
+            style="width: 18rem; margin-right: 20px; margin-bottom: 20px"
+        >
+          <div class="card-body">
+            <div class="d-flex bd-highlight">
+              <h5 class="card-title">{{ machine.machine.hostname }} </h5>
+              <div class="ms-auto bd-highlight">
+                <a
+                    class="btn btn-sm btn-outline-primary"
+                    @click="machineDetail(machine)"
+                >Details</a
+                >
+              </div>
             </div>
-          </div>
-          <div class="mb-2">
-            <div v-if="machine.status === 0">
-              <i class="fas fa-exclamation-triangle text-danger"></i>
-              Disconnected
+            <div class="mb-2">
+              <div v-if="machineStatus[machine.machine.ip_address] === 0">
+                <i class="fas fa-exclamation-triangle text-danger"></i>
+                Disconnected
+              </div>
+              <div v-else>
+                <i class="fas fa-signal text-success"></i> Connected
+              </div>
             </div>
-            <div v-else>
-              <i class="fas fa-signal text-success"></i> Connected
-            </div>
-          </div>
-          <h6 class="card-subtitle mb-2 text-muted">
-            {{ machine.machine.ip_address }}
-          </h6>
-          <div class="row">
-            <div class="col">
-              <div>
-                <div style="margin-left: 30px">
+            <h6 class="card-subtitle mb-2 text-muted">
+              {{ machine.machine.ip_address }}
+            </h6>
+            <div class="row">
+              <div class="col">
+                <div>
+                  <div style="margin-left: 30px">
                   <span class="text-muted pl-4" style="font-size: 80%">
                     CPU</span
                   >
-                </div>
-                <i class="fas fa-microchip text-success fa-lg"></i>
-                <span
-                    class="font-weight-bold text-danger"
-                    style="margin-left: 10px"
-                >
+                  </div>
+                  <i class="fas fa-microchip text-success fa-lg"></i>
+                  <span
+                      class="font-weight-bold text-danger"
+                      style="margin-left: 10px"
+                  >
                   {{ machine.resource.cpu.avg }} %</span
-                >
+                  >
+                </div>
               </div>
-            </div>
-            <div class="col">
-              <div>
-                <div style="margin-left: 30px">
+              <div class="col">
+                <div>
+                  <div style="margin-left: 30px">
                   <span class="text-muted pl-4" style="font-size: 80%">
                     RAM</span
                   >
+                  </div>
+                  <i class="fas fa-memory text-info fa-lg"></i>
+                  <span
+                      class="font-weight-bold text-danger"
+                      style="margin-left: 8px"
+                  >{{ machine.resource.ram.percent }}%</span
+                  >
                 </div>
-                <i class="fas fa-memory text-info fa-lg"></i>
-                <span
-                    class="font-weight-bold text-danger"
-                    style="margin-left: 8px"
-                >{{ machine.resource.ram.percent }}%</span
-                >
               </div>
             </div>
-          </div>
-          <div class="row py-2">
-            <div class="col">
-              <div>
-                <div style="margin-left: 30px">
+            <div class="row py-2">
+              <div class="col">
+                <div>
+                  <div style="margin-left: 30px">
                   <span class="text-muted pl-4" style="font-size: 80%">
                     DISK</span
                   >
+                  </div>
+                  <i class="fas fa-hdd text-primary fa-lg"></i>
+                  <span
+                      class="font-weight-bold text-danger"
+                      style="margin-left: 8px"
+                  >{{ machine.resource.disk.percent }}%</span
+                  >
                 </div>
-                <i class="fas fa-hdd text-primary fa-lg"></i>
-                <span
-                    class="font-weight-bold text-danger"
-                    style="margin-left: 8px"
-                >{{ machine.resource.disk.percent }}%</span
-                >
               </div>
-            </div>
-            <div class="col">
-              <div>
-                <div style="margin-left: 30px">
+              <div class="col">
+                <div>
+                  <div style="margin-left: 30px">
                   <span class="text-muted pl-4" style="font-size: 80%">
                     TEMPRATURE</span
                   >
+                  </div>
+                  <i
+                      class="fas fa-thermometer-three-quarters fa-lg text-danger"
+                      style="margin-left: 5px"
+                  ></i>
+                  <span
+                      class="font-weight-bold text-danger"
+                      style="margin-left: 17px"
+                  >{{ machine.resource.disk.percent }}%</span
+                  >
+                  <div></div>
                 </div>
-                <i
-                    class="fas fa-thermometer-three-quarters fa-lg text-danger"
-                    style="margin-left: 5px"
-                ></i>
-                <span
-                    class="font-weight-bold text-danger"
-                    style="margin-left: 17px"
-                >{{ machine.resource.disk.percent }}%</span
-                >
-                <div></div>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+    <div class="col">
+      <div class="card">
+        <div class="card-header" style="background-color: #00bfa5">
+          <div>
+            <h6 class="m-0 font-weight-bold text-light">Log</h6>
+          </div>
+        </div>
+        <div class="card-body">
+          <logs/>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
 <script>
-// import mqtt from "mqtt";
 import ws from "../../../ws";
-import {listServer} from "../../api/dashboard";
+import {listServer} from "@/api/dashboard";
+import Logs from "@/pages/detail/Logs/Logs";
 
 export default {
   name: "Dashboard",
-  components: {},
+  components: {Logs},
   data() {
     return {
       lstServer: [],
       machines: [],
       topics: [],
       subscribeSuccess: false,
+      machineStatus: {}
     };
   },
   created() {
-    // this.createConnection();
-    console.log("CREATED DASHBOARD");
     this.handleGetListServer();
   },
-  computed: {
-    machinesOnline: function () {
-      return this.machines.filter((el) => el.status === 1);
-    },
-  },
+  computed: {},
+
   methods: {
     /**
      * Function init connection connect MQTT
      */
     createConnection() {
-      console.log("Connected: ", ws.connected);
       ws.on("connect", () => {
         console.log("Connection succeeded!");
       });
@@ -146,45 +156,46 @@ export default {
       });
       ws.on("message", (topic, message) => {
         const data = JSON.parse(message.toString());
-        console.log("TOPIC: ", topic, "DATA: ", data);
-        topic = topic.split("/").at(-1);
-
-        // console.log(topic);
-        this.handleReceiveEvent(topic, data);
+        const topicName = topic.split("/").at(-1);
+        const ipAddress = topic.split("/")[1]
+        this.handleReceiveEvent(topicName, ipAddress, data);
       });
     },
     /**
      * @param {Object} data -  Data corresponding topic receive from broker
      * @param {String} topic - Topic data receive from broker
+     * @param {String} ipAddress - IP Address of server
      */
-    handleReceiveEvent(topic, data) {
+    handleReceiveEvent(topic, ipAddress, data) {
       switch (topic) {
         case "*":
           this.monitorMessage(topic, data);
           break;
-        case "disconnected":
-          this.handleDisconnect(topic, data);
+        case "status":
+          this.handleConnecter(topic, ipAddress, data);
           break;
       }
     },
     /**
-     * Function handle event when machine disconnect
-     * @param {Object} topic - Topic subscribe already
-     * @param {Object} payload - Data sent from broker
+     * Function handle event when machine connect or disconnect
+     * @param {Object} topic Topic subscribe already
+     * @param {String } ipAddress IP Address of server
+     * @param {Object} payload Data sent from broker
      */
-    handleDisconnect(topic, payload) {
-      console.log("Disconnect topic: ", topic);
-      console.log("Disconnect message: ", payload);
-
-      const idx = this.machines.findIndex(
-          (el) =>
-              el.machine.hostname === payload.hostname &&
-              el.machine.ip_address === payload.ip_address
-      );
-      if (idx !== -1) {
-        // Disconnected!
-        this.machines[idx].status = 0;
+    handleConnecter(topic, ipAddress, payload) {
+      if (this.machines.length === 0) {
+        return
       }
+      const position = this.machines.findIndex(
+          (el) => el.machine.ip_address === ipAddress
+      );
+      this.machines[position].status = payload
+      let status = {}
+      status[ipAddress] = payload
+      console.log('Status changed: ', status)
+      this.machineStatus = status
+
+      // console.log(this.machineStatus)
     },
     /**
      * Function view realtime data receive from broker
@@ -192,11 +203,10 @@ export default {
      * @param {Object} payload - Data sent from broker
      */
     monitorMessage(topic, payload) {
-      payload["status"] = 1;
       // Check if machine is existing monitor -> Update, else -> Push to list machines
+
       const idx = this.machines.findIndex(
           (el) =>
-              el.machine.hostname === payload.machine.hostname &&
               el.machine.ip_address === payload.machine.ip_address
       );
       if (idx === -1) {
@@ -211,18 +221,18 @@ export default {
     },
     /**
      * Function handle MQTT events
-     * @param {Array} topics - List topic subscribe
+     * @param {AxiosResponse<any>} topics - List topic subscribe
      */
     handleEventMQTT(topics) {
       // MQTT Client connect event
       // Subscribe event disconnected first
-      console.log("handleEventMQTT");
-      ws.subscribe("server/disconnected", function (err, res) {
+      const statusTopic = topics.map((ip_address) => `server/${ip_address.name}/status`)
+      ws.subscribe(statusTopic, function (err, res) {
         if (err) {
           ws.publish("error", "Hello mqtt");
           return;
         }
-        console.log("Subscribe to topics res", res);
+        console.log("Subscribe to topics status res", res);
       });
 
       // Subscribe event of all machine
@@ -253,27 +263,19 @@ export default {
      */
     machineDetail(payload) {
       document.location.href = `detail/${payload.id}/resources`;
-      // this.$router.push({
-      //   name: "resources",
-      //   params: {
-      //     id: payload.id,
-      //   },
-      // });
-    },
 
+    },
     /**
      * Function fetch all server connected to broker
      */
     handleGetListServer() {
       listServer()
           .then((response) => {
-            console.log('RES: ', response);
             if (response.status === 200) {
               return response.data;
             }
           })
           .then((data) => {
-            console.log("LIST: ", data);
             if (data) {
               const topics = data.map((e) => ({
                 name: e.ip_address,
@@ -286,39 +288,14 @@ export default {
           .then((topics) => {
             // Init connect MQTT
             this.createConnection();
-
             // Handle on event MQTT
             this.handleEventMQTT(topics);
           })
           .catch((error) => console.log(error));
     },
   },
-  beforeDestroy() {
-    /**
-     * Unsubscribe all event ( machine ) before navigate
-     */
-    // return Promise.resolve()
-    //   .then(() => {
-    //     console.log(this.topics);
-    //     return this.topics.map((server) => `server/${server.name}/resources/*`);
-    //   })
-    //   .then((topics) => {
-    //     console.log("TOPICS: ", topics);
-    //     ws.unsubscribe(topics, function (err, res) {
-    //       if (err) {
-    //         ws.publish("error", err);
-    //         return;
-    //       }
-    //       // this.subscribeSuccess = true;
-    //       console.log("====> Un - Subscribe to topics res", res);
-    //     });
-    //   });
-  },
-  watch: {
-    lstServer: function (v) {
-      console.log("V: ", v);
-    },
-  },
+  watch: {}
+
 };
 </script>
 

@@ -4,7 +4,7 @@ import Resouces from "@/pages/detail/Resources/Resources"
 import Process from "@/pages/detail/Process/Process"
 
 export const routes = [
-    { path: '/', component: Dashboard, name: '' },
+    {path: '/', component: Dashboard, name: ''},
     {
         path: '/detail/:id',
         component: Detail,

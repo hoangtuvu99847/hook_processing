@@ -2,31 +2,9 @@
   <div>
     <div id="content-wrapper" class="d-flex flex-column">
       <!-- Main Content -->
-      <div id="content">
-        <div class="container-fluid">
-          <ul class="nav nav-tabs mb-2">
-            <li class="nav-item">
-              <a
-                  :class="['nav-link', endPoint === 'resources' ? 'active' : '']"
-                  href="resources"
-              >
-                Resources and Process
-              </a>
-            </li>
-            <li class="nav-item">
-              <a
-                  :class="['nav-link', endPoint === 'logs' ? 'active' : '']"
-                  href="logs"
-              >Logs</a
-              >
-            </li>
-          </ul>
-          <!-- Content Row -->
-          <router-view/>
-        </div>
-      </div>
-      <!-- End of Main Content -->
+      <router-view/>
     </div>
+    <!-- End of Main Content -->
   </div>
 </template>
 
